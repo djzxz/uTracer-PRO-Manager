@@ -1,0 +1,36 @@
+uTracer PRO Manager — raport bazy v2.44.0
+
+PRAGMA quick_check: ok
+PRAGMA foreign_key_check: 0 błędów
+
+profile_count: 21505
+ready_profile_count: 879
+datasheet_count: 22156
+model_count: 15885
+manufacturer_count: 217
+linked_datasheet_count: 22156
+ready_datasheet_count: 640
+linked_model_count: 15881
+ready_model_count: 227
+
+Ponowny audyt:
+former_ready: 976
+retained_ready: 879
+demoted: 97
+profile_audit_rows: 21505
+manifest_rows_reaudited: 9662
+page_text_rows_sha256_ok: 29185/29185
+
+Oryginalne PDF przeliczone ponownie:
+PART_003: 1813/1813
+PART_004: 1003/1003
+PART_006: 222/222
+Razem: 3038/3038
+
+Polityka:
+EXACT_SOURCE_SHA256__COMPLETE_CRITICAL_FIELDS__PINOUT__PAGE_HASHES__
+UTRACER3_PLUS_LIMITS__95_PERCENT_DISSIPATION_GUARD__NO_AUTO_PROMOTION
+
+Wynik: baza spójna. Żaden profil bez wyniku READY_REVERIFIED_V2_44 nie ma
+approved_for_hardware=1. Żadna rekomendacja READY nie wskazuje profilu
+zablokowanego. Wszystkie zachowane profile READY spełniają 5% zapasu mocy.

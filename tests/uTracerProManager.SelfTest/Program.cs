@@ -216,14 +216,14 @@ var catalogPath = Path.Combine(AppContext.BaseDirectory, "Data", "tube_measureme
 var catalog = new TubeMeasurementCatalogService(catalogPath);
 var info = await catalog.EnsureReadyAsync();
 Assert(info.SchemaVersion == "7", "catalog schema v7");
-Assert(info.CatalogVersion == "2.43.1", "catalog version 2.43.1");
+Assert(info.CatalogVersion == "2.44.0", "catalog version 2.44.0");
 Assert(info.ProfileCount == 21_505, "catalog profile count");
-Assert(info.ReadyProfileCount == 976, "catalog ready profile count");
+Assert(info.ReadyProfileCount == 879, "catalog ready profile count");
 Assert(info.DatasheetCount == 22_156, "datasheet catalog count");
 Assert(info.ModelCount == 15_885, "model catalog count");
 Assert(info.ManufacturerCount == 217, "manufacturer catalog count");
-Assert(info.ReadyDatasheetCount == 754, "ready manufacturer/model cards");
-Assert(info.ReadyModelCount == 268, "ready model designations");
+Assert(info.ReadyDatasheetCount == 640, "ready manufacturer/model cards");
+Assert(info.ReadyModelCount == 227, "ready model designations");
 Assert((await catalog.SearchAsync(string.Empty)).Count == info.ReadyProfileCount,
     "empty profile search loads only READY profiles");
 Assert((await catalog.SearchAsync("ECC83")).Count > 0, "ECC83 database search");
@@ -265,11 +265,9 @@ var v227Profiles = await catalog.FindMatchingProfilesAsync(
     v227Card.DataSheetUrl,
     v227Card.TubeType,
     v227Card.Manufacturer);
-Assert(v227Profiles.Count == 1 &&
-       v227Profiles[0].Id.StartsWith("MFR27_GL6201_GENERAL_ELECTRIC_", StringComparison.Ordinal),
-    "v2.27 card resolves its unique manufacturer/type READY alias");
-Assert(!v227Profiles[0].CountsForConditionPercent && v227Profiles[0].RequiresManualConfirmation,
-    "v2.27 alias keeps percentage disabled and operator confirmation enabled");
+Assert(v227Profiles.Count == 0 && !v227Card.HasApprovedMeasurementProfile &&
+       v227Card.HasBlockedMeasurementProfile,
+    "v2.44 strict power-reserve audit blocks GL6201 at the documented maximum point");
 
 var blockedCards = await catalog.SearchDatasheetsAsync("6080", "AEG", "6080");
 var blockedCard = blockedCards.Single();

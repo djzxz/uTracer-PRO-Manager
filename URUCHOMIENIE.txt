@@ -3,7 +3,7 @@ uTracer PRO Manager Avalonia v1.2.7 — Windows x64
 1. Rozpakuj CAŁY ZIP do nowego folderu.
 2. Zamknij uTracer_3p12p6.exe, starszy Manager i każdy terminal COM.
 3. Uruchom uTracerProManager.Avalonia.exe.
-4. Pakiet zawiera bazę v2.43.1 (schemat v7). Przy pierwszym uruchomieniu program skopiuje ją do profilu użytkownika.
+4. Pakiet zawiera bazę v2.44.0 (schemat v7). Przy pierwszym uruchomieniu program skopiuje ją do profilu użytkownika.
    Jeżeli jest tam starsza baza, zostanie najpierw zachowana w folderze Data\BACKUP_BAZY, a następnie zastąpiona nowszą.
 5. Domyślnie wybrany jest bezpieczny wariant fabrycznego uTracera 3+.
 6. Kliknij ZNAJDŹ uTRACER. Program sprawdzi zgodne profile CH340; po wykryciu port pozostaje otwarty, a nagłówek pokazuje wybrany profil COM.

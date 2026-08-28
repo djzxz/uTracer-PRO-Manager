@@ -1,6 +1,6 @@
 # uTracer PRO Manager Avalonia v1.2.7
 
-Scalone wydanie programu i bazy pomiarowej. Wersja 1.2.7 przywraca pionowe panele egzemplarza i charakterystyk, dodaje na stronie głównej numerowany pinout widziany od spodu, zapamiętuje ustawione przez użytkownika szerokości i wysokości paneli oraz zawiera bazę v2.43.1. Program WPF v1.1.24 pozostaje osobnym, starszym wydaniem.
+Scalone wydanie programu i bazy pomiarowej. Wersja 1.2.7 przywraca pionowe panele egzemplarza i charakterystyk, dodaje na stronie głównej numerowany pinout widziany od spodu, zapamiętuje ustawione przez użytkownika szerokości i wysokości paneli oraz zawiera bazę v2.44.0. Program WPF v1.1.24 pozostaje osobnym, starszym wydaniem.
 
 ## Ważna korekta numerów wersji
 
@@ -24,9 +24,11 @@ Zweryfikowane oznaczenia, sprawdzone 2026-08-11:
 
 - Avalonia UI na .NET 8, układ dopasowywany do obszaru roboczego ekranu;
 - oddzielone projekty: rdzeń pomiarowy, infrastruktura i GUI;
-- wymienna baza SQLite v2.43.1 w pełnym schemacie v7; stare eksporty JSON/CSV v1.19 nie są już źródłem danych programu;
-- 21 505 profili katalogowych, w tym 976 profili READY; 22 156 kart, 15 885 modeli i 217 producentów;
-- 754 karty producent–model są dopuszczone do załadowania profilu; pozostałe wpisy pozostają widoczne i zablokowane;
+- wymienna baza SQLite v2.44.0 w pełnym schemacie v7; stare eksporty JSON/CSV v1.19 nie są już źródłem danych programu;
+- 21 505 profili katalogowych, w tym 879 profili READY po ponownym audycie; 22 156 kart, 15 885 modeli i 217 producentów;
+- 640 dokładnych kart producent–model dopuszczonych do załadowania profilu; pozostałe wpisy pozostają widoczne i zablokowane;
+- wszystkie 976 dotychczasowe profile READY sprawdzono ponownie; 97 cofnięto do blokady, ponieważ punkt odniesienia nie zachowywał wymaganego 5% zapasu względem udokumentowanej mocy strat;
+- wszystkie 9 662 pozycje manifestów z sześciu paczek mają zapisany wynik ponownego audytu; automatyczne OCR nie promuje profilu do READY;
 - 99 nowych, unikalnych wariantów producent–typ w tej partii (łącznie 574 w v2.25+v2.26+v2.27), oznaczonych `PASUJE DO`; wartości wykonawcze są kopiami 1:1 istniejących rekomendacji READY, tożsamości i treści docelowych kart nie sprawdzano ponownie, ocena procentowa jest wyłączona, a potwierdzenie operatora obowiązkowe;
 - ekran pomiaru ma dwa pionowe panele obok siebie: po lewej wartości, pinout i mierzony egzemplarz, po prawej charakterystyki i wynik;
 - pinout na stronie głównej pokazuje ponumerowaną podstawkę widzianą od spodu, klucz orientacyjny, funkcje pinów w dymkach oraz pełny opis tekstowy z profilu; gdy opis jest niejednoznaczny, program nie zgaduje numeracji;
@@ -80,7 +82,7 @@ Szczegółowa macierz znajduje się w `DOKUMENTACJA/FUNKCJE_I_GRANICE.md`.
 1. Rozpakuj cały ZIP do nowego folderu.
 2. Zamknij oryginalny `uTracer_3p12p6.exe`, WPF Manager i każdy terminal COM — w danej chwili tylko jeden program może posiadać COM3.
 3. Uruchom `uTracerProManager.Avalonia.exe` tylko z tego rozpakowanego folderu.
-4. Baza v2.43.1 jest kopiowana do `%LOCALAPPDATA%\uTracerProManagerAvalonia\Data\tube_measurements.db`. Jeżeli znajduje się tam starsza baza, program zachowa jej kopię w `Data\BACKUP_BAZY` i bezpiecznie zainstaluje nowszą.
+4. Baza v2.44.0 jest kopiowana do `%LOCALAPPDATA%\uTracerProManagerAvalonia\Data\tube_measurements.db`. Jeżeli znajduje się tam starsza baza, program zachowa jej kopię w `Data\BACKUP_BAZY` i bezpiecznie zainstaluje nowszą.
 5. Wybierz fabryczny uTracer 3+, port COM i kliknij `ZNAJDŹ uTRACER`. Program sam sprawdzi zgodne warianty sterownika; po wykryciu status musi pozostać `POŁĄCZONY` i pokazać użyty profil COM.
 6. Wykonaj kolejno PING, odczyt ADC i kreator kalibracji bez lampy. Jeśli polecenie zostanie przerwane, użyj `WYŚLIJ ESC` zamiast odłączać USB.
 7. Nie wybieraj wariantu uTmax 3.07, jeżeli tester nie ma właściwego alternatywnego procesora i wymaganych modyfikacji.
@@ -100,7 +102,7 @@ dotnet publish src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj 
 
 ```text
 uTracer PRO Manager Avalonia v1.2.7 — self-test
-DATABASE: 2.43.1; 21505 profiles; 976 ready
+DATABASE: 2.44.0; 21505 profiles; 879 ready
 SELFTEST PASSED
 ```
 

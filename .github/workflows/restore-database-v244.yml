@@ -1,0 +1,51 @@
+name: Restore database v2.44.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .db-v244-parts/**
+      - .github/workflows/restore-database-v244.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore and publish verified database
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! compgen -G '.db-v244-parts/part-*' > /dev/null; then
+            echo 'Database parts already removed; nothing to do.'
+            exit 0
+          fi
+
+          cat .db-v244-parts/part-* > /tmp/tube_measurements_v2_44_0.db.zst
+          echo '718d87eed9175ed97f59e30a6693c57b5c95fc3423662928d83528438e38d7ac  /tmp/tube_measurements_v2_44_0.db.zst' | sha256sum --check --strict
+
+          if ! command -v zstd > /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y zstd
+          fi
+
+          zstd -d -f /tmp/tube_measurements_v2_44_0.db.zst -o src/uTracerProManager.Avalonia/Data/tube_measurements.db
+          echo 'c81cdcd6fd579529ef07d0e05df48c79b6c01ca688d9d6c84995c583f9a83408  src/uTracerProManager.Avalonia/Data/tube_measurements.db' | sha256sum --check --strict
+
+          git lfs install --local
+          git add src/uTracerProManager.Avalonia/Data/tube_measurements.db
+          git rm -r .db-v244-parts
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Dodaj zweryfikowaną bazę v2.44.0'
+          git push origin HEAD:main

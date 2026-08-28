@@ -7,8 +7,8 @@ Stan: 2026-08-11.
 | Warstwa | Potwierdzona wersja | Znaczenie |
 |---|---:|---|
 | uTracer PRO Manager WPF | 1.1.24 | Źródło dotychczasowego silnika pomiarów i bazy |
-| uTracer PRO Manager Avalonia | 1.2.7 | Pionowe panele pomiaru, graficzny pinout, zapisywany układ paneli, 13 pomiarów V3.12.6 i baza v2.43.1 |
-| baza profili pomiarowych | 2.43.1 / schemat 7 | 21 505 profili, 976 READY, 22 156 kart, 15 885 modeli i 217 producentów |
+| uTracer PRO Manager Avalonia | 1.2.7 | Pionowe panele pomiaru, graficzny pinout, zapisywany układ paneli, 13 pomiarów V3.12.6 i baza v2.44.0 |
+| baza profili pomiarowych | 2.44.0 / schemat 7 | 21 505 profili, 879 READY po ponownym audycie, 22 156 kart, 15 885 modeli i 217 producentów |
 | oryginalne GUI u-Tracer | V3.12.6 | Potwierdzone bezpośrednio przez dostarczony plik `uTracer_3p12p6.exe` i jego ekran |
 | uTmax GUI | 3.07a | Oddzielny, alternatywny program; nie jest numerem oryginalnego GUI |
 | alternatywny firmware uTmax | 3.07 | Osobny procesor/firmware; część funkcji wymaga zmian sprzętu |
@@ -18,7 +18,7 @@ Stan: 2026-08-11.
 
 | Funkcja | Avalonia 1.2.7 | Następny etap / ograniczenie |
 |---|---|---|
-| Profile SQLite i karty producentów | działa dla schematów v2 i v7; pakiet zawiera v2.43.1 oraz dane z sześciu kompletnych paczek PDF | dalsza rozbudowa samej bazy niezależnie od programu |
+| Profile SQLite i karty producentów | działa dla schematów v2 i v7; pakiet zawiera v2.44.0, pełny wynik audytu 6 paczek i blokadę rekordów bez kompletnego dowodu | dalsza rozbudowa samej bazy niezależnie od programu |
 | Ekran pomiaru | pionowy panel wartości/pinoutu/egzemplarza obok pionowego panelu charakterystyk; aktywny model/producent i stan kalibracji na górnym pasku | test czytelności na rozdzielczości użytkownika |
 | Graficzny pinout | numerowana podstawka od spodu, klucz orientacyjny, dymki funkcji i pełny opis tekstowy; brak zgadywania przy niejednoznacznym opisie | rozbudować o osobne, zatwierdzone rysunki nietypowych podstawek |
 | Układ paneli | przeciągane separatory pomiaru, bazy i panelu ręcznego; szerokości, wysokość oraz rozmiar okna są zapisywane lokalnie | test ergonomii na ekranach o innym skalowaniu DPI |

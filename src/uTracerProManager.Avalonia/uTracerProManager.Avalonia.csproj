@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>uTracerProManager.Avalonia</AssemblyName>
+    <RootNamespace>uTracerProManager.AvaloniaApp</RootNamespace>
+    <Version>1.2.7</Version>
+    <FileVersion>1.2.7.0</FileVersion>
+    <AssemblyVersion>1.2.7.0</AssemblyVersion>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon />
+    <PlatformTarget>x64</PlatformTarget>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\uTracerProManager.Core\uTracerProManager.Core.csproj" />
+    <ProjectReference Include="..\uTracerProManager.Infrastructure\uTracerProManager.Infrastructure.csproj" />
+    <PackageReference Include="Avalonia" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.11" />
+    <PackageReference Include="ScottPlot.Avalonia" Version="5.0.56" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <None Update="Data\tube_measurements.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

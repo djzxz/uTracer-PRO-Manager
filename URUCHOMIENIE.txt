@@ -1,0 +1,36 @@
+uTracer PRO Manager Avalonia v1.2.7 — Windows x64
+
+1. Rozpakuj CAŁY ZIP do nowego folderu.
+2. Zamknij uTracer_3p12p6.exe, starszy Manager i każdy terminal COM.
+3. Uruchom uTracerProManager.Avalonia.exe.
+4. Pakiet zawiera bazę v2.43.1 (schemat v7). Przy pierwszym uruchomieniu program skopiuje ją do profilu użytkownika.
+   Jeżeli jest tam starsza baza, zostanie najpierw zachowana w folderze Data\BACKUP_BAZY, a następnie zastąpiona nowszą.
+5. Domyślnie wybrany jest bezpieczny wariant fabrycznego uTracera 3+.
+6. Kliknij ZNAJDŹ uTRACER. Program sprawdzi zgodne profile CH340; po wykryciu port pozostaje otwarty, a nagłówek pokazuje wybrany profil COM.
+7. Wykonaj PING i odczyt ADC bez lampy. WYŚLIJ ESC odzyskuje przerwaną komendę bez odłączania USB.
+8. Emulator nie uruchamia się automatycznie. Wynik emulatora zawsze jest oznaczony.
+9. Przed prawdziwą lampą wykonaj pełną kalibrację bez lampy.
+10. W USTAWIENIACH można importować i eksportować oryginalne pliki kalibracji .cal.
+11. W PROFILU RĘCZNYM można importować i eksportować ustawienia .uts dla GUI V3.11/V3.12.6.
+12. W KRZYWE / POMIAR RĘCZNY wybiera się jeden z 13 trybów V3.12.6. Tryby Va=Vs, +Vg, UL i Schade wymagają jawnego potwierdzenia okablowania.
+13. Wpis czerwony jest zablokowany dla wybranej wersji sprzętu i nie można go załadować.
+14. Na ekranie POMIAR wpisz fragment numeru, producenta, typu albo kodu, aby odtworzyć zapisany pomiar; NOWY EGZEMPLARZ tworzy pusty formularz bez usuwania aktywnego modelu.
+15. Pinout na stronie głównej jest widokiem od spodu. Najedź na numer pinu, aby zobaczyć funkcję; pełny opis znajduje się pod rysunkiem.
+16. Przeciągaj szare separatory, aby ustawić szerokości i wysokości paneli. Program zapamiętuje układ na kolejne uruchomienie.
+
+RĘCZNA PODMIANA SAMEJ BAZY W PRZYSZŁOŚCI:
+1. Zamknij wszystkie kopie uTracer PRO Manager.
+2. Skopiuj nowy plik tube_measurements.db do folderu Data obok programu.
+3. Uruchom program. Nowsza wersja zostanie automatycznie przeniesiona do profilu użytkownika z kopią poprzedniej bazy.
+
+UWAGA: to scalone wydanie Avalonia i bazy pomiarowej. Kompilacja i self-test przeszły,
+ale połączenie i pomiary nie zostały jeszcze sprawdzone z fizycznym uTracerem 3+.
+Zachowaj program v1.1.24 jako wersję awaryjną.
+
+Oryginalne GUI dostarczone przez użytkownika ma wersję V3.12.6.
+uTmax GUI 3.07a i alternatywny firmware 3.07 są osobnym rozwiązaniem.
+
+Jeśli Avalonia nie wystartuje, prześlij plik:
+%LOCALAPPDATA%\uTracerProManager\Logs\startup_avalonia.log
+
+Pełne informacje: README_PL.md oraz DOKUMENTACJA\FUNKCJE_I_GRANICE.md

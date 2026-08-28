@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>uTracerProManager.Core</AssemblyName>
+    <RootNamespace>uTracerProManager.Core</RootNamespace>
+    <Version>1.2.7</Version>
+    <FileVersion>1.2.7.0</FileVersion>
+    <AssemblyVersion>1.2.7.0</AssemblyVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\uTracer_3p12p6_default.uts" />
+  </ItemGroup>
+</Project>

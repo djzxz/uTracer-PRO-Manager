@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\uTracerProManager.Core\uTracerProManager.Core.csproj" />
+    <ProjectReference Include="..\..\src\uTracerProManager.Infrastructure\uTracerProManager.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\src\uTracerProManager.Avalonia\Data\tube_measurements.db"
+          Link="Data\tube_measurements.db"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

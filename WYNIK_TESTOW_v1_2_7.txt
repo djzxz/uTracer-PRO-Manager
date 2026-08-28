@@ -1,0 +1,34 @@
+uTracer PRO Manager Avalonia v1.2.7 — WERYFIKACJA BAZY v2.43.1
+================================================================
+
+Data weryfikacji: 2026-08-28
+Program: 1.2.7
+Baza: 2.43.1 / schemat 7
+
+WYNIK WALIDATORA AVALONIA v1.2.7
+--------------------------------
+- profile: 21 505
+- READY: 976
+- karty katalogowe: 22 156
+- modele: 15 885
+- producenci: 217
+- powiązane karty: 22 156
+- karty READY: 754
+- powiązane modele: 15 881
+- modele READY: 268
+
+KONTROLA SPÓJNOŚCI
+------------------
+- SQLite PRAGMA quick_check: ok
+- naruszenia kluczy obcych: 0
+- osierocone powiązania: 0
+- nieprawidłowe rekomendacje: 0
+- niebezpieczne profile: 0
+
+SHA-256 BAZY
+------------
+ca86bce9e90bc310f4d5c1bb15f37f4dc3b7e10419dd7d81d2945af07f97fbca
+
+Kod programu ma nagłówek i oczekiwania self-testu zaktualizowane do bazy v2.43.1.
+Zmiany dotyczą stałych tekstowych oraz oczekiwanych liczników; logika pomiarowa
+programu v1.2.7 nie została zmieniona.

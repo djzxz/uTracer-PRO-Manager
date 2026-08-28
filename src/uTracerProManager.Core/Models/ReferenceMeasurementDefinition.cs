@@ -1,0 +1,91 @@
+namespace uTracerProManager.Core.Models;
+
+public sealed record ReferenceMeasurementDefinition(
+    ReferenceMeasurementKind Kind,
+    string DisplayName,
+    string Description,
+    string XAxisLabel,
+    string SteppingLabel,
+    bool RequiresSpecialWiring = false,
+    bool PositiveGridMode = false,
+    bool UltraLinearMode = false,
+    bool SchadeFeedbackMode = false,
+    bool HeaterSweep = false,
+    string Usage = "")
+{
+    public int OriginalGuiIndex => (int)Kind;
+
+    public override string ToString() => DisplayName;
+
+    public static IReadOnlyList<ReferenceMeasurementDefinition> All { get; } =
+    [
+        new(ReferenceMeasurementKind.GridSweepSteppedAnode,
+            "1. I(Vg, Va) — Vs i Vh stałe",
+            "Krzywe przejściowe: Ia i Is w funkcji Vg, kolejne krzywe dla Va.",
+            "Napięcie siatki Vg [V]", "Va [V]",
+            Usage: "Dobór polaryzacji siatki, ocena wzmocnienia i porównanie egzemplarzy przy kilku napięciach anodowych."),
+        new(ReferenceMeasurementKind.GridSweepSteppedTiedAnodeScreen,
+            "2. I(Vg, Va=Vs) — Vh stałe",
+            "Krzywe przejściowe obu sekcji podwójnej triody; drugi anoda korzysta z wyjścia Vs.",
+            "Napięcie siatki Vg [V]", "Va=Vs [V]", RequiresSpecialWiring: true,
+            Usage: "Porównanie dwóch sekcji podwójnej triody przy jednakowych napięciach anodowych; wymaga osobnego połączenia Va i Vs."),
+        new(ReferenceMeasurementKind.AnodeSweepSteppedGrid,
+            "3. I(Va, Vg) — Vs i Vh stałe",
+            "Klasyczne charakterystyki anodowe: Ia i Is w funkcji Va, kolejne krzywe dla Vg.",
+            "Napięcie anodowe Va [V]", "Vg [V]",
+            Usage: "Podstawowy pomiar do wyznaczania punktu pracy, prostej obciążenia, gm, Rp i μ lamp audio."),
+        new(ReferenceMeasurementKind.AnodeSweepSteppedScreen,
+            "4. I(Va, Vs) — Vg i Vh stałe",
+            "Ia i Is w funkcji Va, kolejne krzywe dla napięcia ekranu Vs.",
+            "Napięcie anodowe Va [V]", "Vs [V]",
+            Usage: "Ocena wpływu napięcia siatki ekranującej w tetrodach i pentodach oraz dobór bezpiecznego Vs."),
+        new(ReferenceMeasurementKind.TiedAnodeScreenSweepSteppedGrid,
+            "5. I(Va=Vs, Vg) — Vh stałe",
+            "Wspólny skan Va=Vs; używany m.in. dla dwóch sekcji triody albo połączenia triodowego.",
+            "Napięcie Va=Vs [V]", "Vg [V]", RequiresSpecialWiring: true,
+            Usage: "Pomiar pentody połączonej triodowo albo dwóch torów z równym napięciem; przed startem sprawdź specjalne okablowanie."),
+        new(ReferenceMeasurementKind.ScreenSweepSteppedGrid,
+            "6. I(Vs, Vg) — Va i Vh stałe",
+            "Ia i Is w funkcji napięcia ekranu Vs, kolejne krzywe dla Vg.",
+            "Napięcie ekranu Vs [V]", "Vg [V]",
+            Usage: "Badanie prądu ekranu i czułości pentody na Vs; przydatne przy projektowaniu zasilania siatki drugiej."),
+        new(ReferenceMeasurementKind.PositiveGridSweepSteppedAnode,
+            "7. I(Vs, Va) — tryb +Vg",
+            "Krzywa przejściowa triody z dodatnią siatką: wyjście Vs zasila siatkę, zacisk Vg pozostaje wolny.",
+            "Dodatnie napięcie siatki z Vs [V]", "Va [V]", true, true,
+            Usage: "Tylko do kontrolowanych badań klasy A2 / prądu siatki; nie używaj jako zwykłego testu i pilnuj limitów prądu."),
+        new(ReferenceMeasurementKind.AnodeSweepSteppedPositiveGrid,
+            "8. I(Va, Vs) — tryb +Vg",
+            "Charakterystyka anodowa triody z dodatnią siatką zasilaną z wyjścia Vs.",
+            "Napięcie anodowe Va [V]", "+Vg z Vs [V]", true, true,
+            Usage: "Krzywe mocy w obszarze dodatniej siatki dla układów A2; wymaga specjalnego przewodu i ostrożnego compliance."),
+        new(ReferenceMeasurementKind.HeaterSweepSteppedGrid,
+            "9. I(Vh, Vg) — Va i Vs stałe",
+            "Wpływ napięcia żarzenia: Ia i Is w funkcji Vh, kolejne krzywe dla Vg.",
+            "Napięcie żarzenia Vh [V]", "Vg [V]", HeaterSweep: true,
+            Usage: "Sprawdzenie wrażliwości emisji na niedożarzenie lub przeżarzenie; stosuj mały zakres wokół wartości nominalnej."),
+        new(ReferenceMeasurementKind.HeaterSweepSteppedAnode,
+            "10. I(Vh, Va) — Vg i Vs stałe",
+            "Wpływ napięcia żarzenia: Ia i Is w funkcji Vh, kolejne krzywe dla Va.",
+            "Napięcie żarzenia Vh [V]", "Va [V]", HeaterSweep: true,
+            Usage: "Ocena stabilności emisji przy zmianach żarzenia i napięcia anody; nie przekraczaj limitu Uf z karty."),
+        new(ReferenceMeasurementKind.GridSweepSteppedAnodeUltraLinear,
+            "11. I(Vg, Va), Vs=UL(Va,k)",
+            "Krzywe przejściowe z symulacją odczepu ultraliniowego według wzoru oryginalnego GUI.",
+            "Napięcie siatki Vg [V]", "Va [V]", UltraLinearMode: true,
+            Usage: "Ocena sterowania lampy mocy w układzie ultraliniowym dla wybranego procentu odczepu transformatora."),
+        new(ReferenceMeasurementKind.AnodeSweepSteppedGridUltraLinear,
+            "12. I(Va, Vg), Vs=UL(Va,k)",
+            "Charakterystyki anodowe z symulacją odczepu ultraliniowego.",
+            "Napięcie anodowe Va [V]", "Vg [V]", UltraLinearMode: true,
+            Usage: "Dobór punktu pracy, obciążenia i odczepu UL na podstawie pełnej rodziny krzywych anodowych."),
+        new(ReferenceMeasurementKind.AnodeSweepSteppedGridSchadeFeedback,
+            "13. I(Va, Vg) — Schade Feedback",
+            "Charakterystyki anodowe z programowo wyliczanym napięciem Vg dla sprzężenia Schade.",
+            "Napięcie anodowe Va [V]", "Vg zadane [V]", SchadeFeedbackMode: true,
+            Usage: "Analiza lokalnego sprzężenia anoda–siatka Schade i jego wpływu na liniowość oraz rezystancję wewnętrzną.")
+    ];
+
+    public static ReferenceMeasurementDefinition For(ReferenceMeasurementKind kind) =>
+        All.Single(item => item.Kind == kind);
+}

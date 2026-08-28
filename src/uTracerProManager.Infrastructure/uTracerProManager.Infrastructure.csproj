@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>uTracerProManager.Infrastructure</AssemblyName>
+    <RootNamespace>uTracerProManager</RootNamespace>
+    <Version>1.2.7</Version>
+    <FileVersion>1.2.7.0</FileVersion>
+    <AssemblyVersion>1.2.7.0</AssemblyVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\uTracerProManager.Core\uTracerProManager.Core.csproj" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.29" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="QuestPDF" Version="2026.7.1" />
+    <PackageReference Include="ScottPlot" Version="5.0.56" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,471 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:uTracerProManager.AvaloniaApp.ViewModels"
+        xmlns:models="clr-namespace:uTracerProManager.Core.Models;assembly=uTracerProManager.Core"
+        xmlns:scott="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        x:Class="uTracerProManager.AvaloniaApp.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="uTracer PRO Manager — Avalonia UI"
+        Width="1440" Height="900"
+        MinWidth="1100" MinHeight="700"
+        WindowStartupLocation="CenterScreen">
+  <Grid RowDefinitions="76,*,30">
+    <Border Grid.Row="0" Background="#173F68" Padding="16,8">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="uTracer PRO Manager" FontSize="27" FontWeight="Bold" Foreground="White" />
+          <TextBlock Text="Avalonia UI v1.2.7 • baza SQLite v2.43.1 • zgodność plików GUI V3.11/V3.12.6"
+                     FontSize="12" Foreground="#C7DAEC" />
+        </StackPanel>
+        <Border Grid.Column="1" Background="#285981" CornerRadius="5" Padding="10,6" VerticalAlignment="Center">
+          <TextBlock Text="{Binding ActiveTubeSummary}" Foreground="White" FontWeight="Bold" FontSize="14" />
+        </Border>
+        <Border Grid.Column="2" Background="#285981" CornerRadius="5" Padding="10,6" VerticalAlignment="Center">
+          <TextBlock Text="{Binding HardwareTopSummary}" Foreground="White" FontWeight="SemiBold" />
+        </Border>
+        <Border Grid.Column="3" Background="#6E4A13" CornerRadius="5" Padding="10,6" VerticalAlignment="Center">
+          <TextBlock Text="{Binding CalibrationTopSummary}" Foreground="White" FontWeight="SemiBold" />
+        </Border>
+        <Border Grid.Column="4" Background="#8A2930" CornerRadius="5" Padding="10,6" VerticalAlignment="Center">
+          <TextBlock Text="{Binding ConnectionStatus}" Foreground="White" FontWeight="Bold" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab}">
+      <TabItem Header="◉  POMIAR">
+        <Grid x:Name="MeasurementLayout" Margin="12" ColumnDefinitions="560,8,*">
+          <Grid x:Name="MeasurementLeftLayout" RowDefinitions="420,8,*">
+            <Border Classes="card">
+              <Grid ColumnDefinitions="1.02*,1.18*" ColumnSpacing="10">
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                  <TextBlock Classes="h2" Text="Wartości pomiarowe" />
+                  <Grid Grid.Row="1" RowDefinitions="*,*,*,*" ColumnDefinitions="*,*" RowSpacing="7" ColumnSpacing="8">
+                    <StackPanel><TextBlock Classes="caption" Text="Żarzenie Uf / If"/><TextBlock Text="{Binding HeaterValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C"/></StackPanel>
+                    <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Va / Vs"/><TextBlock Text="{Binding VaVsValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C"/></StackPanel>
+                    <StackPanel Grid.Row="1"><TextBlock Classes="caption" Text="Vg"/><TextBlock Text="{Binding VgValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C"/></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1"><TextBlock Classes="caption" Text="Ia / Is nominalne"/><TextBlock Text="{Binding IaIsValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C" TextWrapping="Wrap"/></StackPanel>
+                    <StackPanel Grid.Row="2"><TextBlock Classes="caption" Text="gm"/><TextBlock Text="{Binding GmValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C"/></StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1"><TextBlock Classes="caption" Text="μ / Rp"/><TextBlock Text="{Binding MuRpValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C"/></StackPanel>
+                    <StackPanel Grid.Row="3" Grid.ColumnSpan="2"><TextBlock Classes="caption" Text="Pa max / limit Ia"/><TextBlock Text="{Binding LimitsValue}" FontSize="17" FontWeight="Bold" Foreground="#17395C"/></StackPanel>
+                  </Grid>
+                  <Border Grid.Row="2" Background="#EAF3FB" CornerRadius="4" Padding="8,5">
+                    <TextBlock Text="{Binding CompatibilitySummary}" FontSize="14" FontWeight="SemiBold" Foreground="#1769AA" TextWrapping="Wrap" />
+                  </Border>
+                </Grid>
+
+                <Grid Grid.Column="1" RowDefinitions="Auto,210,Auto,Auto" RowSpacing="5">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="h2" Text="Pinout podstawki" />
+                    <TextBlock Grid.Column="1" Text="{Binding PinoutSocketLabel}" Classes="caption" FontWeight="Bold" />
+                  </Grid>
+                  <Grid Grid.Row="1" Width="210" Height="210" HorizontalAlignment="Center">
+                    <Ellipse Width="180" Height="180" Fill="#F3F7FB" Stroke="#6D8397" StrokeThickness="3" />
+                    <Ellipse Width="62" Height="62" Fill="#DCE6EF" Stroke="#6D8397" StrokeThickness="2" />
+                    <Border Width="22" Height="16" Background="#8B5E3C" CornerRadius="3"
+                            VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,8"
+                            ToolTip.Tip="Klucz / przerwa orientacyjna podstawki" />
+                    <TextBlock Text="WIDOK&#10;OD SPODU" TextAlignment="Center" FontSize="11" FontWeight="Bold"
+                               Foreground="#496379" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <ItemsControl ItemsSource="{Binding PinoutPins}" Width="210" Height="210">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><Canvas Width="210" Height="210" /></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PinoutPinViewModel">
+                          <Border Width="36" Height="36" Margin="{Binding Position}" Background="{Binding Fill}"
+                                  BorderBrush="#17395C" BorderThickness="2" CornerRadius="18"
+                                  ToolTip.Tip="{Binding Tooltip}">
+                            <TextBlock Text="{Binding Number}" Foreground="White" FontSize="15" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Grid>
+                  <TextBlock Grid.Row="2" Text="{Binding PinoutLegend}" FontSize="13" FontWeight="SemiBold"
+                             TextWrapping="Wrap" Foreground="#17395C" />
+                  <TextBlock Grid.Row="3" Text="{Binding PinoutDescription}" FontSize="12.5"
+                             TextWrapping="Wrap" Foreground="#526A7F" />
+                </Grid>
+              </Grid>
+            </Border>
+
+            <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="#9DB2C5"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          ToolTip.Tip="Przeciągnij, aby zmienić wysokość paneli" />
+
+            <Border Classes="card" Grid.Row="2">
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="6">
+                <TextBlock Classes="h2" Text="Mierzony egzemplarz" />
+                <TextBox Grid.Row="1" Text="{Binding SpecimenSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                         Watermark="Szukaj zapisanego pomiaru po numerze, producencie lub typie">
+                  <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding SearchStoredMeasurementsCommand}" />
+                  </TextBox.KeyBindings>
+                </TextBox>
+                <ComboBox Grid.Row="2" ItemsSource="{Binding StoredMeasurementMatches}"
+                          SelectedItem="{Binding SelectedStoredMeasurement}"
+                          ToolTip.Tip="Wybierz zapisany pomiar / egzemplarz">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:StoredTestSummary">
+                      <TextBlock Text="{Binding SearchLabel}" TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Row="3" Content="+ NOWY EGZEMPLARZ" Command="{Binding NewSpecimenCommand}" HorizontalAlignment="Stretch" />
+                <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="8">
+                  <StackPanel><TextBlock Classes="caption" Text="Numer / oznaczenie"/><TextBox Text="{Binding InventoryNumber}" Watermark="np. MAG-001"/></StackPanel>
+                  <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Producent egzemplarza"/><TextBox Text="{Binding ManufacturerForTest}" Watermark="np. Philips"/></StackPanel>
+                </Grid>
+                <StackPanel Grid.Row="5"><TextBlock Classes="caption" Text="Tryb diagnostyczny"/><ComboBox ItemsSource="{Binding TestModes}" SelectedItem="{Binding SelectedTestMode}"/></StackPanel>
+                <StackPanel Grid.Row="6"><TextBlock Classes="caption" Text="Notatki"/><TextBox Text="{Binding TestNotes}" Watermark="opcjonalnie" AcceptsReturn="True" MaxHeight="72"/></StackPanel>
+                <WrapPanel Grid.Row="7" VerticalAlignment="Bottom">
+                  <Button Classes="primary" Margin="0,0,6,0" Content="URUCHOM DIAGNOSTYKĘ" Command="{Binding RunTestCommand}" />
+                  <Button Classes="danger" Content="PRZERWIJ" Command="{Binding CancelTestCommand}" />
+                </WrapPanel>
+              </Grid>
+            </Border>
+          </Grid>
+
+          <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#9DB2C5"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        ToolTip.Tip="Przeciągnij, aby zmienić szerokość paneli" />
+
+          <Border Classes="card" Grid.Column="2">
+            <Grid RowDefinitions="Auto,*,Auto,Auto" RowSpacing="10">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="h2" Text="Charakterystyki i wynik" />
+                <TextBlock Grid.Column="1" Text="{Binding TestProgress, StringFormat={}{0:F0}%}" FontWeight="Bold" Foreground="#1769AA" />
+              </Grid>
+              <Border Grid.Row="1" Background="#FAFCFF" BorderBrush="#D9E5F0" BorderThickness="1" CornerRadius="5">
+                <scott:AvaPlot x:Name="LivePlot" />
+              </Border>
+              <ProgressBar Grid.Row="2" Minimum="0" Maximum="100" Value="{Binding TestProgress}" Height="12" />
+              <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <StackPanel Spacing="5">
+                  <TextBlock Text="{Binding TestStatus}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding LastResult}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="EKSPORT PDF / XLSX / CSV / TXT" Click="ExportResult_Click" VerticalAlignment="Bottom" />
+              </Grid>
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="⌁  KRZYWE / POMIAR RĘCZNY">
+        <Grid x:Name="ReferenceLayout" Margin="12" ColumnDefinitions="610,8,*">
+          <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="Panel referencyjny oryginalnego GUI" />
+                <ComboBox ItemsSource="{Binding ReferenceMeasurement.MeasurementTypes}"
+                          SelectedItem="{Binding ReferenceMeasurement.SelectedMeasurement}" />
+                <Border Background="#EAF3FB" CornerRadius="5" Padding="9,6">
+                  <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <StackPanel><TextBlock Classes="caption" Text="CO MIERZY" FontWeight="Bold"/><TextBlock Text="{Binding ReferenceMeasurement.MeasurementDescription}" TextWrapping="Wrap"/></StackPanel>
+                    <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="KIEDY UŻYĆ" FontWeight="Bold"/><TextBlock Text="{Binding ReferenceMeasurement.MeasurementUsage}" TextWrapping="Wrap"/></StackPanel>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
+              <Border Classes="card">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="8" RowSpacing="7">
+                  <TextBlock Grid.ColumnSpan="2" Classes="h2" Text="Skan i zmienna krokowa" />
+                  <StackPanel Grid.Row="1"><TextBlock Classes="caption" Text="Początek osi X"/><NumericUpDown Value="{Binding ReferenceMeasurement.XStart}" Increment="0.1"/></StackPanel>
+                  <StackPanel Grid.Row="1" Grid.Column="1"><TextBlock Classes="caption" Text="Koniec osi X"/><NumericUpDown Value="{Binding ReferenceMeasurement.XStop}" Increment="0.1"/></StackPanel>
+                  <StackPanel Grid.Row="2"><TextBlock Classes="caption" Text="Liczba przedziałów"/><NumericUpDown Value="{Binding ReferenceMeasurement.Intervals}" Minimum="1" Maximum="200" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Row="2" Grid.Column="1"><TextBlock Classes="caption" Text="Opóźnienie [s]"/><NumericUpDown Value="{Binding ReferenceMeasurement.DelaySeconds}" Minimum="0" Maximum="120" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Row="3" Grid.ColumnSpan="2"><TextBlock Classes="caption" Text="{Binding ReferenceMeasurement.SteppingLabel, StringFormat=Wartości krokowe — {0}}"/><TextBox Text="{Binding ReferenceMeasurement.SteppingValues}" Watermark="np. -1; -2; -3; -4"/></StackPanel>
+                  <CheckBox Grid.Row="4" Grid.ColumnSpan="2" IsChecked="{Binding ReferenceMeasurement.LogarithmicX}" Content="Oś X logarytmiczna"/>
+                  <TextBlock Grid.Row="5" Grid.ColumnSpan="2" Classes="caption" Text="{Binding ReferenceMeasurement.XAxisLabel}" TextWrapping="Wrap"/>
+                </Grid>
+              </Border>
+
+              <Border Classes="card" Grid.Column="1">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="8" RowSpacing="7">
+                  <TextBlock Grid.ColumnSpan="2" Classes="h2" Text="Stałe i zabezpieczenia" />
+                  <StackPanel Grid.Row="1"><TextBlock Classes="caption" Text="Va stałe [V]"/><NumericUpDown Value="{Binding ReferenceMeasurement.ConstantVa}" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Row="1" Grid.Column="1"><TextBlock Classes="caption" Text="Vs stałe [V]"/><NumericUpDown Value="{Binding ReferenceMeasurement.ConstantVs}" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Row="2"><TextBlock Classes="caption" Text="Vg stałe [V]"/><NumericUpDown Value="{Binding ReferenceMeasurement.ConstantVg}" Minimum="-120" Maximum="0" Increment="0.1" FormatString="+0.00;-0.00;0.00"/></StackPanel>
+                  <StackPanel Grid.Row="2" Grid.Column="1"><TextBlock Classes="caption" Text="Vh stałe [V]"/><NumericUpDown Value="{Binding ReferenceMeasurement.ConstantVh}" Increment="0.1"/></StackPanel>
+                  <StackPanel Grid.Row="3"><TextBlock Classes="caption" Text="Uśrednianie 0–7"/><ComboBox ItemsSource="{Binding ReferenceMeasurement.AveragingOptions}" SelectedItem="{Binding ReferenceMeasurement.AveragingIndex}"/></StackPanel>
+                  <StackPanel Grid.Row="3" Grid.Column="1"><TextBlock Classes="caption" Text="Compliance [mA]"/><ComboBox ItemsSource="{Binding ReferenceMeasurement.ComplianceOptions}" SelectedItem="{Binding ReferenceMeasurement.ComplianceMa}"/></StackPanel>
+                  <StackPanel Grid.Row="4"><TextBlock Classes="caption" Text="Rozgrzewanie [s]"/><NumericUpDown Value="{Binding ReferenceMeasurement.WarmupSeconds}" Minimum="60" Maximum="1800" Increment="10"/></StackPanel>
+                  <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding ReferenceMeasurement.ExternalHeater}" Content="Zewnętrzne żarzenie" VerticalAlignment="Bottom"/>
+                  <StackPanel Grid.Row="5" IsVisible="{Binding ReferenceMeasurement.UltraLinearVisible}"><TextBlock Classes="caption" Text="Odczep UL k [%]"/><NumericUpDown Value="{Binding ReferenceMeasurement.UltraLinearKPercent}" Minimum="0" Maximum="100" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Row="5" Grid.Column="1" IsVisible="{Binding ReferenceMeasurement.SchadeVisible}"><TextBlock Classes="caption" Text="Schade FB [%]"/><NumericUpDown Value="{Binding ReferenceMeasurement.SchadeFeedbackPercent}" Minimum="0" Maximum="100" Increment="0.1"/></StackPanel>
+                </Grid>
+              </Border>
+            </Grid>
+
+            <Border Grid.Row="2" Classes="card">
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                <Border Background="#FFE9D6" CornerRadius="5" Padding="9" IsVisible="{Binding ReferenceMeasurement.SpecialWiringRequired}">
+                  <StackPanel Spacing="5">
+                    <TextBlock Text="{Binding ReferenceMeasurement.SpecialWiringText}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                    <CheckBox IsChecked="{Binding ReferenceMeasurement.SpecialWiringConfirmed}"
+                              Content="Potwierdzam dokładnie takie połączenie przewodów i pinów"/>
+                  </StackPanel>
+                </Border>
+                <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="{Binding ReferenceMeasurement.Progress}" Height="12"/>
+                <TextBlock Grid.Row="2" Text="{Binding ReferenceMeasurement.Status}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                <WrapPanel Grid.Row="3">
+                  <Button Classes="primary" Margin="0,0,8,0" Content="ZMIERZ KRZYWE" Command="{Binding RunReferenceMeasurementCommand}"/>
+                  <Button Classes="danger" Content="PRZERWIJ / HEATER 0 / END" Command="{Binding CancelReferenceMeasurementCommand}"/>
+                  <Button Margin="8,0,0,0" Content="ZAPISZ DANE CSV" Click="SaveReferenceData_Click"/>
+                  <Button Margin="8,0,0,0" Content="ZAPISZ WYKRES PNG" Click="SaveReferencePlot_Click"/>
+                </WrapPanel>
+              </Grid>
+            </Border>
+          </Grid>
+
+          <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#9DB2C5"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        ToolTip.Tip="Przeciągnij, aby zmienić szerokość panelu ręcznego i wykresu" />
+
+          <Border Classes="card" Grid.Column="2">
+            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+              <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                <TextBlock Classes="h2" Text="Wykres Ia / Is"/>
+                <CheckBox Grid.Column="1" IsChecked="{Binding ReferenceMeasurement.KeepPlot}" Content="Zachowaj poprzedni"/>
+                <CheckBox Grid.Column="2" IsChecked="{Binding ReferenceMeasurement.ShowGrid}" Content="Siatka"/>
+                <CheckBox Grid.Column="3" IsChecked="{Binding ReferenceMeasurement.UseColor}" Content="Kolor"/>
+              </Grid>
+              <Border Grid.Row="1" Background="#FAFCFF" BorderBrush="#D9E5F0" BorderThickness="1" CornerRadius="5">
+                <scott:AvaPlot x:Name="ReferencePlot" />
+              </Border>
+              <Grid Grid.Row="2" RowDefinitions="Auto,Auto" RowSpacing="7">
+                <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+                  <StackPanel><TextBlock Classes="caption" Text="Oś Y1"/><ComboBox ItemsSource="{Binding ReferenceMeasurement.YVariables}" SelectedItem="{Binding ReferenceMeasurement.Y1Variable}"/></StackPanel>
+                  <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Oś Y2"/><ComboBox ItemsSource="{Binding ReferenceMeasurement.YVariables}" SelectedItem="{Binding ReferenceMeasurement.Y2Variable}"/></StackPanel>
+                  <StackPanel Grid.Column="2"><TextBlock Classes="caption" Text="Styl"/><ComboBox ItemsSource="{Binding ReferenceMeasurement.LineStyles}" SelectedItem="{Binding ReferenceMeasurement.LineStyle}"/></StackPanel>
+                  <StackPanel Grid.Column="3"><TextBlock Classes="caption" Text="Skala"/><ComboBox ItemsSource="{Binding ReferenceMeasurement.ScaleModes}" SelectedItem="{Binding ReferenceMeasurement.ScaleMode}"/></StackPanel>
+                  <StackPanel Grid.Column="4"><TextBlock Classes="caption" Text="Tytuł"/><TextBox Text="{Binding ReferenceMeasurement.PlotTitle}"/></StackPanel>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,Auto" ColumnSpacing="8">
+                  <StackPanel IsVisible="{Binding ReferenceMeasurement.ManualScale}"><TextBlock Classes="caption" Text="X min"/><NumericUpDown Value="{Binding ReferenceMeasurement.XMinimum}" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Column="1" IsVisible="{Binding ReferenceMeasurement.ManualScale}"><TextBlock Classes="caption" Text="X max"/><NumericUpDown Value="{Binding ReferenceMeasurement.XMaximum}" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Column="2" IsVisible="{Binding ReferenceMeasurement.ManualScale}"><TextBlock Classes="caption" Text="Y min"/><NumericUpDown Value="{Binding ReferenceMeasurement.YMinimum}" Increment="1"/></StackPanel>
+                  <StackPanel Grid.Column="3" IsVisible="{Binding ReferenceMeasurement.ManualScale}"><TextBlock Classes="caption" Text="Y max"/><NumericUpDown Value="{Binding ReferenceMeasurement.YMaximum}" Increment="1"/></StackPanel>
+                  <Button Grid.Column="4" Content="WYCZYŚĆ WYKRES" Click="ClearReferencePlot_Click" VerticalAlignment="Bottom"/>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="▦  BAZA LAMP">
+        <Grid Margin="12" RowDefinitions="Auto,*,Auto" RowSpacing="10">
+          <Border Classes="card">
+            <Grid ColumnDefinitions="2*,*,*,Auto" ColumnSpacing="9">
+              <TextBox x:Name="ProfileSearchBox" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                       Watermark="Wpisuj model, odpowiednik, rodzinę lub producenta — wyniki odświeżają się automatycznie">
+                <TextBox.KeyBindings>
+                  <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
+                </TextBox.KeyBindings>
+              </TextBox>
+              <ComboBox Grid.Column="1" ItemsSource="{Binding Manufacturers}" SelectedItem="{Binding SelectedManufacturer}"
+                        ToolTip.Tip="Producent" IsEditable="True" />
+              <ComboBox Grid.Column="2" ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
+                        ToolTip.Tip="Model producenta" IsEditable="True" />
+              <Button Grid.Column="3" Classes="primary" Content="SZUKAJ" Command="{Binding SearchCommand}" />
+            </Grid>
+          </Border>
+
+          <Grid x:Name="DatabaseLayout" Grid.Row="1" ColumnDefinitions="*,8,*">
+            <Border Classes="card">
+              <Grid RowDefinitions="Auto,*,Auto,Auto" RowSpacing="8">
+                <TextBlock Classes="h2" Text="Profile wartości pomiarowych" />
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding HighlightedProfile}"
+                          IsReadOnly="True" AutoGenerateColumns="False" GridLinesVisibility="Horizontal">
+                  <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Profil" Width="2*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding DisplayName}" Foreground="{Binding ListForeground}" FontWeight="SemiBold" TextWrapping="Wrap"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Producent / pasuje do" Width="2*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding ManufacturerScope}" Foreground="{Binding ListForeground}" TextWrapping="Wrap"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Stan" Width="1.2*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding ApprovalLabel}" Foreground="{Binding ListForeground}" FontWeight="Bold" TextWrapping="Wrap"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Va" Binding="{Binding AnodeVoltage}" Width="58" />
+                    <DataGridTextColumn Header="Vg" Binding="{Binding GridVoltage}" Width="58" />
+                  </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock Grid.Row="2" Text="{Binding HighlightedProfileSummary}" TextWrapping="Wrap"/>
+                <WrapPanel Grid.Row="3">
+                  <Button Classes="primary" Content="ZAŁADUJ ZAZNACZONY PROFIL" Command="{Binding LoadHighlightedProfileCommand}" Margin="0,0,8,0"/>
+                  <Button Content="★ ULUBIONE" Command="{Binding ToggleFavoriteCommand}" />
+                </WrapPanel>
+              </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#9DB2C5"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          ToolTip.Tip="Przeciągnij, aby ustawić szerokość profili i kart producentów" />
+
+            <Border Classes="card" Grid.Column="2">
+              <Grid RowDefinitions="Auto,*,Auto,Auto" RowSpacing="8">
+                <TextBlock Classes="h2" Text="Oryginalne karty producentów" />
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Datasheets}" SelectedItem="{Binding SelectedDatasheet}"
+                          IsReadOnly="True" AutoGenerateColumns="False" GridLinesVisibility="Horizontal">
+                  <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Model" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding TubeType}" Foreground="{Binding ListForeground}" FontWeight="SemiBold"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Producent" Width="2*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Manufacturer}" Foreground="{Binding ListForeground}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Stan pomiaru" Width="2*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding MeasurementStatusLabel}" Foreground="{Binding ListForeground}" FontWeight="Bold" TextWrapping="Wrap"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock Grid.Row="2" Text="{Binding SelectedDatasheet.MeasurementStatusReason}" TextWrapping="Wrap" />
+                <Button Grid.Row="3" Classes="primary" Content="ZAŁADUJ PROFIL DLA TEGO PRODUCENTA"
+                        Command="{Binding LoadDatasheetProfileCommand}" HorizontalAlignment="Left" />
+              </Grid>
+            </Border>
+          </Grid>
+
+          <Border Grid.Row="2" Background="#FFE7E7" BorderBrush="#E3A3A3" BorderThickness="1" CornerRadius="5" Padding="9">
+            <TextBlock Text="Czerwony wpis pozostaje widoczny w pełnym katalogu, ale przycisk ZAŁADUJ jest zablokowany. Kolor nie oznacza usunięcia modelu z bazy."
+                       TextWrapping="Wrap" />
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="✎  PROFIL RĘCZNY">
+        <Grid Margin="12" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+          <StackPanel>
+            <TextBlock Classes="h1" Text="Parametry wprowadzane ręcznie" />
+            <TextBlock Text="Układ odpowiada ręcznemu panelowi oryginalnego programu. Szkic bez potwierdzenia wartości pozostaje zablokowany." />
+          </StackPanel>
+          <Border Grid.Row="1" Background="#EAF3FB" BorderBrush="#B9CEE2" BorderThickness="1" CornerRadius="5" Padding="10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBlock Text="{Binding OriginalSetupSummary}" TextWrapping="Wrap" VerticalAlignment="Center" />
+              <WrapPanel Grid.Column="1">
+                <Button Content="IMPORTUJ ORYGINALNY .UTS" Click="ImportOriginalSetup_Click" Margin="0,0,8,0" />
+                <Button Classes="primary" Content="EKSPORTUJ DO ORYGINALNEGO .UTS" Click="ExportOriginalSetup_Click" />
+              </WrapPanel>
+            </Grid>
+          </Border>
+          <Border Grid.Row="2" Classes="card">
+            <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="9">
+              <StackPanel><TextBlock Classes="caption" Text="Nazwa profilu"/><TextBox Text="{Binding ManualProfile.DisplayName}"/></StackPanel>
+              <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Typy / odpowiedniki"/><TextBox Text="{Binding ManualProfile.TubeTypes}"/></StackPanel>
+              <StackPanel Grid.Column="2"><TextBlock Classes="caption" Text="Producent"/><TextBox Text="{Binding ManualProfile.Manufacturer}"/></StackPanel>
+              <StackPanel Grid.Column="3"><TextBlock Classes="caption" Text="Rodzina"/><TextBox Text="{Binding ManualProfile.Family}"/></StackPanel>
+              <StackPanel Grid.Row="1" Grid.ColumnSpan="3"><TextBlock Classes="caption" Text="Pełny pinout"/><TextBox Text="{Binding ManualProfile.Pinout}" Watermark="np. 1=a, 2=g1, 3=k..."/></StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="3"><TextBlock Classes="caption" Text="Ostrzeżenie"/><TextBox Text="{Binding ManualProfile.Warning}"/></StackPanel>
+              <StackPanel Grid.Row="2"><TextBlock Classes="caption" Text="Uf [V]"/><NumericUpDown Value="{Binding ManualProfile.HeaterVoltage}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="1"><TextBlock Classes="caption" Text="If [A]"/><NumericUpDown Value="{Binding ManualProfile.HeaterCurrentAmp}" Increment="0.05"/></StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Classes="caption" Text="Va [V]"/><NumericUpDown Value="{Binding ManualProfile.AnodeVoltage}" Increment="1"/></StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="3"><TextBlock Classes="caption" Text="Vs [V]"/><NumericUpDown Value="{Binding ManualProfile.ScreenVoltage}" Increment="1"/></StackPanel>
+              <StackPanel Grid.Row="3"><TextBlock Classes="caption" Text="Vg [V]"/><NumericUpDown Value="{Binding ManualProfile.GridVoltage}" Minimum="-100" Maximum="0" Increment="0.1" FormatString="+0.00;-0.00;0.00"/></StackPanel>
+              <StackPanel Grid.Row="3" Grid.Column="1"><TextBlock Classes="caption" Text="Ia nominalne [mA]"/><NumericUpDown Value="{Binding ManualProfile.NominalIa}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="3" Grid.Column="2"><TextBlock Classes="caption" Text="Is nominalne [mA]"/><NumericUpDown Value="{Binding ManualProfile.NominalIs}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="3" Grid.Column="3"><TextBlock Classes="caption" Text="gm [mA/V]"/><NumericUpDown Value="{Binding ManualProfile.NominalGm}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="4"><TextBlock Classes="caption" Text="μ"/><NumericUpDown Value="{Binding ManualProfile.NominalMu}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="4" Grid.Column="1"><TextBlock Classes="caption" Text="Rp [kΩ]"/><NumericUpDown Value="{Binding ManualProfile.NominalRp}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="4" Grid.Column="2"><TextBlock Classes="caption" Text="Va maks. [V]"/><NumericUpDown Value="{Binding ManualProfile.MaxAnodeVoltage}" Increment="1"/></StackPanel>
+              <StackPanel Grid.Row="4" Grid.Column="3"><TextBlock Classes="caption" Text="Vs maks. [V]"/><NumericUpDown Value="{Binding ManualProfile.MaxScreenVoltage}" Increment="1"/></StackPanel>
+              <StackPanel Grid.Row="5"><TextBlock Classes="caption" Text="Pa maks. [W]"/><NumericUpDown Value="{Binding ManualProfile.MaxAnodePower}" Increment="0.1"/></StackPanel>
+              <StackPanel Grid.Row="5" Grid.Column="1"><TextBlock Classes="caption" Text="Ia compliance [mA]"/><NumericUpDown Value="{Binding ManualProfile.AnodeCompliance}" Increment="1"/></StackPanel>
+              <StackPanel Grid.Row="5" Grid.Column="2"><TextBlock Classes="caption" Text="Czas nagrzewania [s]"/><NumericUpDown Value="{Binding ManualProfile.WarmupSeconds}" Increment="10"/></StackPanel>
+              <StackPanel Grid.Row="5" Grid.Column="3"><TextBlock Classes="caption" Text="Notatki"/><TextBox Text="{Binding ManualProfile.Notes}"/></StackPanel>
+            </Grid>
+          </Border>
+          <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <CheckBox IsChecked="{Binding ManualProfile.ValuesConfirmed}" Content="Potwierdzam pinout, żarzenie, punkt pracy i limity na podstawie dokumentacji" />
+            <Button Grid.Column="1" Classes="primary" Content="ZAPISZ PROFIL RĘCZNY" Command="{Binding SaveManualProfileCommand}" />
+          </Grid>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="◷  HISTORIA">
+        <Grid Margin="12" RowDefinitions="Auto,*" RowSpacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel><TextBlock Classes="h1" Text="Niezmienna historia pomiarów"/><TextBlock Text="Wyniki emulatora i sprzętu są przechowywane oddzielnie i jednoznacznie oznaczone."/></StackPanel>
+            <Button Grid.Column="1" Content="ODŚWIEŻ" Command="{Binding RefreshHistoryCommand}" VerticalAlignment="Center" />
+          </Grid>
+          <Border Grid.Row="1" Classes="card">
+            <DataGrid ItemsSource="{Binding History}" IsReadOnly="True" AutoGenerateColumns="False" GridLinesVisibility="Horizontal">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Data" Binding="{Binding CompletedAt}" Width="150"/><DataGridTextColumn Header="Egzemplarz" Binding="{Binding TubeInventoryNumber}" Width="*"/><DataGridTextColumn Header="Producent" Binding="{Binding Manufacturer}" Width="*"/><DataGridTextColumn Header="Profil" Binding="{Binding ProfileName}" Width="2*"/><DataGridTextColumn Header="Tryb" Binding="{Binding TestMode}" Width="*"/><DataGridTextColumn Header="Ocena" Binding="{Binding Grade}" Width="90"/><DataGridTextColumn Header="Kondycja %" Binding="{Binding ConditionPercent}" Width="100"/><DataGridCheckBoxColumn Header="Emulator" Binding="{Binding Emulator}" Width="85"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="☰  USTAWIENIA">
+        <Grid Margin="12" ColumnDefinitions="*,*" ColumnSpacing="12">
+          <StackPanel Grid.Column="0" Spacing="10">
+            <Border Classes="card">
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                <TextBlock Classes="h2" Text="Połączenie z testerem i wariant sprzętu" />
+                <ComboBox Grid.Row="1" ItemsSource="{Binding HardwareOptions}" SelectedItem="{Binding SelectedHardware}">
+                  <ComboBox.ItemTemplate><DataTemplate x:DataType="models:HardwareCapabilities"><TextBlock Text="{Binding DisplayName}"/></DataTemplate></ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Grid.Row="2" Text="{Binding SelectedHardware.SafetyNote}" TextWrapping="Wrap" />
+                <CheckBox Grid.Row="3" IsChecked="{Binding ModifiedHardwareConfirmed}"
+                          Content="Potwierdzam, że wybrana modyfikacja została fizycznie wykonana" />
+                <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                  <CheckBox IsChecked="{Binding EmulatorRequested}" Content="EMULATOR — dane syntetyczne" Foreground="#A62A2A" FontWeight="Bold" VerticalAlignment="Center"/>
+                  <ComboBox Grid.Column="1" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" ToolTip.Tip="Port COM" />
+                  <Button Grid.Column="2" Content="ODŚWIEŻ" Command="{Binding RefreshPortsCommand}" />
+                </Grid>
+                <WrapPanel Grid.Row="5">
+                  <Button Classes="primary" Margin="0,0,6,6" Content="POŁĄCZ" Command="{Binding ConnectCommand}" />
+                  <Button Margin="0,0,6,6" Content="ROZŁĄCZ" Command="{Binding DisconnectCommand}" />
+                  <Button Margin="0,0,6,6" Content="PING" Command="{Binding PingCommand}" />
+                  <Button Margin="0,0,6,6" Content="WYŚLIJ ESC" Command="{Binding SendEscapeCommand}" />
+                  <Button Margin="0,0,6,6" Content="ZNAJDŹ uTRACER" Command="{Binding FindDeviceCommand}" />
+                </WrapPanel>
+              </Grid>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Kalibracja urządzenia" />
+                <TextBlock Text="{Binding CalibrationSummary}" TextWrapping="Wrap" />
+                <Border Background="#F4F8FC" BorderBrush="#D8E0EA" BorderThickness="1" CornerRadius="4" Padding="9">
+                  <TextBlock Text="{Binding CalibrationValuesSummary}" FontFamily="Consolas" TextWrapping="Wrap" />
+                </Border>
+                <TextBlock Classes="caption" Text="Aktywny plik"/><TextBlock Text="{Binding CalibrationPath}" TextWrapping="Wrap" />
+                <WrapPanel>
+                  <Button Classes="primary" Content="KREATOR PEŁNEJ KALIBRACJI" Click="OpenCalibrationWizard_Click" Margin="0,0,8,6" />
+                  <Button Content="IMPORTUJ .CAL / JSON" Click="ImportCalibration_Click" Margin="0,0,8,6" />
+                  <Button Content="EKSPORTUJ DLA GUI V3.11 / V3.12.6" Click="ExportOriginalCalibration_Click" Margin="0,0,0,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Spacing="10">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Wymienna baza pomiarowa" />
+                <TextBlock Text="{Binding CatalogSummary}" TextWrapping="Wrap" />
+                <TextBlock Classes="caption" Text="Aktywna baza"/><TextBlock Text="{Binding ActiveCatalogPath}" TextWrapping="Wrap" />
+                <Button Classes="primary" Content="SPRAWDŹ I PODMIEŃ BAZĘ SQLITE" Click="ImportDatabase_Click" HorizontalAlignment="Left" />
+                <TextBlock Text="Podmiana jest atomowa, poprzednia baza trafia do BACKUP_BAZY. Program otwiera bazę tylko na czas zapytania." TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <Expander Header="Dziennik komunikacji, diagnostyka i bezpieczeństwo — domyślnie ukryte">
+              <Border Classes="card" Margin="0,8,0,0">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="caption" Text="Dziennik protokołu" />
+                  <ListBox ItemsSource="{Binding CommunicationLog}" Height="240" FontFamily="Consolas" FontSize="11" />
+                  <TextBlock Classes="caption" Text="Plik logu"/><TextBlock Text="{Binding LogPath}" TextWrapping="Wrap" />
+                  <Border Background="#FFF3D8" CornerRadius="5" Padding="10">
+                    <TextBlock Text="Każdy pomiar rzeczywisty wymaga trwałego połączenia, pełnej kalibracji v2, profilu dopuszczonego do wybranego sprzętu oraz kontroli limitów." TextWrapping="Wrap" />
+                  </Border>
+                </StackPanel>
+              </Border>
+            </Expander>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+    </TabControl>
+
+    <Border Grid.Row="2" Background="#DDE8F4" Padding="12,4">
+      <TextBlock Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis" />
+    </Border>
+  </Grid>
+</Window>

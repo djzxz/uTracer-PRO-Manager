@@ -1,0 +1,31 @@
+uTracer PRO Manager — WYDANIE SCALONE
+
+Program: Avalonia v1.2.7
+Baza: v2.43.1
+Schemat SQLite: 7
+
+Stan bazy:
+- 21 505 profili katalogowych;
+- 976 profili READY;
+- 20 529 profili BLOCKED;
+- 22 156 kart katalogowych;
+- 15 885 modeli;
+- 217 producentów;
+- 754 karty z dopuszczonym profilem;
+- 268 oznaczeń modeli z dopuszczonym profilem.
+
+Import sześciu paczek:
+- 9 662 wiersze manifestu;
+- 8 747 par model–producent;
+- 7 342 unikalne karty PDF;
+- 29 185 zapisanych stron tekstu;
+- 8 611 mapowań profili;
+- 0 brakujących mapowań.
+
+Plik używany przez program:
+src\uTracerProManager.Avalonia\Data\tube_measurements.db
+
+SHA-256 bazy:
+ca86bce9e90bc310f4d5c1bb15f37f4dc3b7e10419dd7d81d2945af07f97fbca
+
+Baza jest przechowywana w repozytorium przez Git LFS.

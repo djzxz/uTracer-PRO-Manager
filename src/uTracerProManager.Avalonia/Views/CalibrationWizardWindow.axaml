@@ -1,0 +1,232 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:uTracerProManager.AvaloniaApp.ViewModels"
+        x:Class="uTracerProManager.AvaloniaApp.Views.CalibrationWizardWindow"
+        x:DataType="vm:CalibrationWizardViewModel"
+        Title="Kreator pełnej kalibracji uTracera 3+"
+        Width="1220" Height="790" MinWidth="900" MinHeight="620"
+        WindowStartupLocation="CenterOwner">
+  <Grid RowDefinitions="72,*,70">
+    <Border Background="#173F68" Padding="18,10">
+      <StackPanel>
+        <TextBlock Text="Kreator pełnej kalibracji v2" Foreground="White" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="Dokładne miejsca pomiaru, ręczne suwaki jak w panelu uTmax oraz bezpieczne sterowanie punktami"
+                   Foreground="#C7DAEC" />
+      </StackPanel>
+    </Border>
+
+    <TabControl Grid.Row="1" SelectedIndex="{Binding Step}" Margin="12">
+      <TabItem Header="1. PRZYGOTOWANIE">
+        <Grid Margin="10" ColumnDefinitions="1.3*,*" ColumnSpacing="14">
+          <Border Classes="card">
+            <Image Source="avares://uTracerProManager.Avalonia/Assets/Calibration/board.png"
+                   Stretch="Uniform" />
+          </Border>
+          <Border Grid.Column="1" Classes="card">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="h2" Text="Zanim włączysz jakiekolwiek wyjście" />
+              <TextBlock Text="1. Wyjmij lampę z podstawki. Nie wystarczy odłączyć jednego przewodu." TextWrapping="Wrap" />
+              <TextBlock Text="2. Ustaw multimetr na napięcie stałe. Czarną sondę podłącz do GND płytki; czerwoną tylko do punktu wskazanego w danym kroku." TextWrapping="Wrap" />
+              <TextBlock Text="3. Do pomiaru Va/Vs używaj przewodów i multimetru o odpowiedniej kategorii napięciowej. Nie dotykaj płytki podczas aktywnego punktu." TextWrapping="Wrap" />
+              <TextBlock Text="4. Żarzenie pozostaje wyłączone (kod 0) podczas kalibracji napięć." TextWrapping="Wrap" />
+              <Border Background="#FFE5E5" CornerRadius="5" Padding="12">
+                <TextBlock Text="Na kondensatorach może pozostać wysokie napięcie po kliknięciu STOP. Odczekaj i sprawdź multimetrem, zanim zmienisz przewody."
+                           FontWeight="Bold" TextWrapping="Wrap" />
+              </Border>
+              <CheckBox IsChecked="{Binding NoTubeConfirmed}"
+                        Content="Potwierdzam: w podstawce NIE MA lampy" FontWeight="Bold" Foreground="#A62A2A" />
+              <StackPanel>
+                <TextBlock Classes="caption" Text="Port używany przez profil" />
+                <TextBox Text="{Binding PortName}" Watermark="np. COM3" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="2. ZASILANIE">
+        <Grid Margin="10" ColumnDefinitions="1.1*,1.2*" ColumnSpacing="14">
+          <Border Classes="card">
+            <Grid RowDefinitions="*,Auto" RowSpacing="8">
+              <Image Source="avares://uTracerProManager.Avalonia/Assets/Calibration/negative_step.png" Stretch="Uniform" />
+              <TextBlock Grid.Row="1" Text="GND multimetru do masy płytki. Dodatnią i ujemną szynę mierz wyłącznie w punktach testowych opisanych w dokumentacji płytki."
+                         TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+          <Border Grid.Column="1" Classes="card">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="h2" Text="Vsu i zasilanie ujemne Vn" />
+              <Button Content="ODCZYTAJ ADC PRZY WYŁĄCZONYCH WYJŚCIACH" Click="ReadIdle_Click" HorizontalAlignment="Left" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel><TextBlock Classes="caption" Text="Vsu wyliczone z ADC [V]"/><NumericUpDown Value="{Binding RawSupplyVoltage}" Increment="0.01"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Vsu zmierzone DMM [V]"/><NumericUpDown Value="{Binding DmmSupplyVoltage}" Increment="0.01"/></StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel><TextBlock Classes="caption" Text="Vn wyliczone z ADC [V]"/><NumericUpDown Value="{Binding RawNegativeVoltage}" Minimum="-100" Maximum="0" Increment="0.1" FormatString="+0.000;-0.000;0.000"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Vn zmierzone DMM [V]"/><NumericUpDown Value="{Binding DmmNegativeVoltage}" Minimum="-100" Maximum="0" Increment="0.1" FormatString="+0.000;-0.000;0.000"/></StackPanel>
+              </Grid>
+              <TextBlock Text="Suwak Vsu" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="8">
+                <Slider Minimum="0.4" Maximum="1.6" Value="{Binding VsuFactor}" TickFrequency="0.001" />
+                <NumericUpDown Grid.Column="1" Minimum="0.4" Maximum="1.6" Value="{Binding VsuFactor}" Increment="0.001" FormatString="F4" />
+              </Grid>
+              <TextBlock Text="Suwak Vn" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="8">
+                <Slider Minimum="0.4" Maximum="1.6" Value="{Binding VnFactor}" TickFrequency="0.001" />
+                <NumericUpDown Grid.Column="1" Minimum="0.4" Maximum="1.6" Value="{Binding VnFactor}" Increment="0.001" FormatString="F4" />
+              </Grid>
+              <Button Classes="primary" Content="OBLICZ NOWE WSPÓŁCZYNNIKI" Click="ApplySupply_Click" HorizontalAlignment="Left" />
+              <CheckBox IsChecked="{Binding SupplyVerified}" Content="Vsu sprawdzone po korekcie" />
+              <CheckBox IsChecked="{Binding NegativeVerified}" Content="Vn sprawdzone po korekcie" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="3. SIATKA Vg">
+        <Grid Margin="10" ColumnDefinitions="1.1*,1.2*" ColumnSpacing="14">
+          <Border Classes="card">
+            <Grid RowDefinitions="*,Auto" RowSpacing="8">
+              <Image Source="avares://uTracerProManager.Avalonia/Assets/Calibration/grid_step.png" Stretch="Uniform" />
+              <TextBlock Grid.Row="1" Text="Czarna sonda: GND. Czerwona sonda: wyjście napięcia siatki Vg. Najpierw punkt -0,5 V, potem -40 V."
+                         TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+          <Border Grid.Column="1" Classes="card">
+            <StackPanel Spacing="9">
+              <TextBlock Classes="h2" Text="Model offset + slope zgodny z panelem uTmax" />
+              <WrapPanel>
+                <Button Content="USTAW Vg = -0,5 V" Click="HoldGridHalf_Click" Margin="0,0,8,8" />
+                <Button Content="USTAW Vg = -40 V" Click="HoldGridForty_Click" Margin="0,0,8,8" />
+                <Button Classes="danger" Content="STOP / ROZŁADUJ" Click="StopOutput_Click" Margin="0,0,8,8" />
+              </WrapPanel>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel><TextBlock Classes="caption" Text="DMM przy komendzie -0,5 V"/><NumericUpDown Value="{Binding MeasuredGridHalf}" Minimum="-2" Maximum="0" Increment="0.001" FormatString="+0.0000;-0.0000;0.0000"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="DMM przy komendzie -40 V"/><NumericUpDown Value="{Binding MeasuredGridForty}" Minimum="-60" Maximum="0" Increment="0.01" FormatString="+0.000;-0.000;0.000"/></StackPanel>
+              </Grid>
+              <Button Classes="primary" Content="WYLICZ Vg OFFSET I SLOPE" Click="ApplyGrid_Click" HorizontalAlignment="Left" />
+              <TextBlock Text="Wartości zgodne z oryginalnym plikiem .cal" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                <StackPanel><TextBlock Classes="caption" Text="Vgrid low / sat"/><NumericUpDown Value="{Binding Vg1Factor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Vgrid 4 V"/><NumericUpDown Value="{Binding Vg4Factor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Classes="caption" Text="Vgrid 40 V"/><NumericUpDown Value="{Binding Vg40Factor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+                <StackPanel Grid.Row="1"><TextBlock Classes="caption" Text="Vsat (oryg.)"/><NumericUpDown Value="{Binding OriginalVsatFactor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1"><TextBlock Classes="caption" Text="Vglow / spare (oryg.)"/><NumericUpDown Value="{Binding OriginalSpareFactor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+              </Grid>
+              <TextBlock Text="Vg offset [V]" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,160" ColumnSpacing="8">
+                <Slider Minimum="-0.4" Maximum="0.4" Value="{Binding GridOffset}" TickFrequency="0.001" />
+                <NumericUpDown Grid.Column="1" Minimum="-0.4" Maximum="0.4" Value="{Binding GridOffset}" Increment="0.001" FormatString="+0.0000;-0.0000;0.0000" />
+              </Grid>
+              <TextBlock Text="Vg slope" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,160" ColumnSpacing="8">
+                <Slider Minimum="0.8" Maximum="1.2" Value="{Binding GridSlope}" TickFrequency="0.001" />
+                <NumericUpDown Grid.Column="1" Minimum="0.8" Maximum="1.2" Value="{Binding GridSlope}" Increment="0.001" FormatString="F4" />
+              </Grid>
+              <CheckBox IsChecked="{Binding GridVerified}" Content="Oba punkty Vg sprawdzone ponownie po korekcie" />
+              <Border Background="#FFF3D8" CornerRadius="5" Padding="10">
+                <TextBlock Text="Akceptowany pomiar: punkt niski 0,3–0,7 V, punkt wysoki 35–45 V. Poza tym zakresem kreator odrzuca wynik — nie zgaduje współczynników."
+                           TextWrapping="Wrap" />
+              </Border>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="4. Va / Vs">
+        <Grid Margin="10" ColumnDefinitions="1.1*,1.2*" ColumnSpacing="14">
+          <Border Classes="card">
+            <Grid RowDefinitions="*,Auto" RowSpacing="8">
+              <Image Source="avares://uTracerProManager.Avalonia/Assets/Calibration/original_panel.png" Stretch="Uniform" />
+              <TextBlock Grid.Row="1" Text="Panel referencyjny: suwaki Va i Vs korygują dzielnik komendy. Zawsze mierz osobno wyjście anody i ekranu względem GND."
+                         TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+          <Border Grid.Column="1" Classes="card">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="h2" Text="Kalibracja napięć boost" />
+              <StackPanel>
+                <TextBlock Classes="caption" Text="Punkt docelowy [V] — zalecane 100 V" />
+                <NumericUpDown Value="{Binding TargetBoostVoltage}" Minimum="10" Maximum="250" Increment="10" />
+              </StackPanel>
+              <WrapPanel>
+                <Button Content="USTAW Va" Click="HoldAnode_Click" Margin="0,0,8,8" />
+                <Button Content="USTAW Vs" Click="HoldScreen_Click" Margin="0,0,8,8" />
+                <Button Classes="danger" Content="STOP / ROZŁADUJ" Click="StopOutput_Click" Margin="0,0,8,8" />
+              </WrapPanel>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel><TextBlock Classes="caption" Text="Va zmierzone DMM [V]"/><NumericUpDown Value="{Binding MeasuredVa}" Increment="0.1"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Vs zmierzone DMM [V]"/><NumericUpDown Value="{Binding MeasuredVs}" Increment="0.1"/></StackPanel>
+              </Grid>
+              <TextBlock Text="Suwak Va" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="8">
+                <Slider Minimum="0.4" Maximum="1.6" Value="{Binding VaFactor}" TickFrequency="0.001" />
+                <NumericUpDown Grid.Column="1" Minimum="0.4" Maximum="1.6" Value="{Binding VaFactor}" Increment="0.001" FormatString="F4" />
+              </Grid>
+              <TextBlock Text="Suwak Vs" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="8">
+                <Slider Minimum="0.4" Maximum="1.6" Value="{Binding VsFactor}" TickFrequency="0.001" />
+                <NumericUpDown Grid.Column="1" Minimum="0.4" Maximum="1.6" Value="{Binding VsFactor}" Increment="0.001" FormatString="F4" />
+              </Grid>
+              <Button Classes="primary" Content="OBLICZ Va / Vs" Click="ApplyBoost_Click" HorizontalAlignment="Left" />
+              <CheckBox IsChecked="{Binding VoltageVerified}" Content="Va i Vs sprawdzone ponownie po korekcie" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="5. PRĄDY I ZAPIS">
+        <Grid Margin="10" ColumnDefinitions="1.05*,1.25*" ColumnSpacing="14">
+          <Border Classes="card">
+            <Grid RowDefinitions="*,Auto" RowSpacing="8">
+              <Image Source="avares://uTracerProManager.Avalonia/Assets/Calibration/resistors.png" Stretch="Uniform" />
+              <TextBlock Grid.Row="1" Text="Kalibrację Ia/Is wykonuj z rezystorami wzorcowymi zgodnie z dokumentacją. Nie zastępuj jej pomiarem przez nieznaną lampę."
+                         TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+          <Border Grid.Column="1" Classes="card">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="h2" Text="Tor prądowy, limity i podsumowanie" />
+              <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                <StackPanel><TextBlock Classes="caption" Text="Ia oczekiwane"/><NumericUpDown Value="{Binding ExpectedIa}" Increment="0.1"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Ia zmierzone"/><NumericUpDown Value="{Binding MeasuredIa}" Increment="0.1"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Classes="caption" Text="Is oczekiwane"/><NumericUpDown Value="{Binding ExpectedIs}" Increment="0.1"/></StackPanel>
+                <StackPanel Grid.Column="3"><TextBlock Classes="caption" Text="Is zmierzone"/><NumericUpDown Value="{Binding MeasuredIs}" Increment="0.1"/></StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel><TextBlock Classes="caption" Text="Ia factor"/><NumericUpDown Value="{Binding IaFactor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Is factor"/><NumericUpDown Value="{Binding IsFactor}" Minimum="0.4" Maximum="1.6" Increment="0.001" FormatString="F4"/></StackPanel>
+              </Grid>
+              <Button Classes="primary" Content="OBLICZ Ia / Is" Click="ApplyCurrent_Click" HorizontalAlignment="Left" />
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <StackPanel><TextBlock Classes="caption" Text="RaVal [Ω]"/><NumericUpDown Value="{Binding AnodeDivider}" Increment="10"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="R sense Ia [Ω]"/><NumericUpDown Value="{Binding AnodeSense}" Increment="0.1"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Classes="caption" Text="R sense Is [Ω]"/><NumericUpDown Value="{Binding ScreenSense}" Increment="0.1"/></StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <StackPanel><TextBlock Classes="caption" Text="Va maks. [V]"/><NumericUpDown Value="{Binding MaxAnodeVoltage}" Maximum="425" Increment="5"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Classes="caption" Text="Ia maks. [mA]"/><NumericUpDown Value="{Binding MaxAnodeCurrent}" Maximum="400" Increment="5"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Classes="caption" Text="Is maks. [mA]"/><NumericUpDown Value="{Binding MaxScreenCurrent}" Maximum="400" Increment="5"/></StackPanel>
+              </Grid>
+              <CheckBox IsChecked="{Binding CurrentVerified}" Content="Ia i Is sprawdzone rezystorami wzorcowymi" />
+              <Border Background="#E7F4EA" CornerRadius="5" Padding="10">
+                <StackPanel>
+                  <TextBlock Text="Warunki kompletnego profilu:" FontWeight="Bold" />
+                  <TextBlock Text="Vsu + Vn + Vg offset/slope + Va/Vs + Ia/Is. Brak dowolnego potwierdzenia pozostawia pomiar lampy zablokowany." TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+    </TabControl>
+
+    <Border Grid.Row="2" Background="#DDE8F4" Padding="12,8">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="{Binding HardwareStatus}" TextWrapping="Wrap" VerticalAlignment="Center" />
+        <Button Grid.Column="1" Classes="danger" Content="STOP WYJŚĆ" Click="StopOutput_Click" />
+        <Button Grid.Column="2" Classes="primary" Content="SPRAWDŹ I ZAPISZ KALIBRACJĘ" Click="Save_Click" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

@@ -1,0 +1,147 @@
+ 19500        external heater voltage (*1000)
+ 0            external heater flag
+ 0            system variable 3
+ 0            system variable 4
+ 0            system variable 5
+ 0            system variable 6
+ 0            system variable 7
+ 0            system variable 8
+ 0            system variable 9
+ 0            system variable 10
+ 0            measurement type
+-10000        Variable 1 Start (*1000)
+ 0            Variable 1 Stop (*1000)
+ 10           Variable 1 number of intervals
+ 0            Variable 1 log/lin
+ 200000       Constant 1 (*1000)
+ 6300         Constant 2 (*1000)
+ 0            Delay (*1000)
+ 1            number of stepping variables
+ 200000       stepping variable:   1 
+ 8            Ia Range
+ 8            Is Range
+ 6            no. Averagings
+ 0            Compliance
+ 0            to Beep or not to Beep
+ 0            low voltage grid
+ 0            spare measurement variable 3
+ 0            spare measurement variable 4
+ 0            spare measurement variable 5
+ 1            Y1 axis variable
+ 0            Y2 axis variable
+ 1            Y1 marker
+ 4            Y2 marker
+ 1            Y1 line style
+ 2            Y2 line style
+ 0            X axis scaling
+ 0            Y1 axis scaling
+ 0            Y2 axis scaling
+-10000        Xmin (*1000)
+ 0            Y1min (*1000)
+ 0            Y2min (*1000)
+ 0            Xmax (*1000)
+ 10           Y1max (*1000)
+ 10           Y2max (*1000)
+ 10           number of X-ticks
+ 10           number of Y1-ticks
+ 10           number of Y2-ticks
+ 3            degree of polynom
+ 0            Pmax 
+ 0            spare variable
+ 0            Keep Plot check box
+ 1            Color check box
+ 1            Grid check box
+ 1            title off flag
+ 0            title top flag
+ 0            title top flag
+Title
+ 0            spare graph variable 1
+ 0            spare graph variable 2
+ 0            spare graph variable 3
+ 0            spare graph variable 4
+ 0            spare graph variable 5
+ 0            pinning position  0 
+ 0            pinning position  1 
+ 0            pinning position  2 
+ 0            pinning position  3 
+ 0            pinning position  4 
+ 0            pinning position  5 
+ 0            pinning position  6 
+ 0            pinning position  7 
+ 0            pinning position  8 
+ 0            pinning position  9 
+ 0            pinning position  10 
+ 0            pinning position  11 
+ 0            pinning position  12 
+ 0            pinning position  13 
+ 0            pinning position  14 
+ 0            pinning position  15 
+ 0            pinning position  16 
+ 0            pinning position  17 
+ 0            pinning position  18 
+ 0            pinning position  19 
+ 0            pinning position  20 
+ 0            spare variable  1 
+ 0            spare variable  2 
+ 0            spare variable  3 
+ 0            spare variable  4 
+ 0            spare variable  5 
+ 0            spare variable  6 
+ 0            spare variable  7 
+ 0            spare variable  8 
+ 0            spare variable  9 
+ 0            spare variable  10 
+ 0            spare variable  11 
+ 0            spare variable  12 
+ 0            spare variable  13 
+ 0            spare variable  14 
+ 0            spare variable  15 
+ 0            spare variable  16 
+ 0            spare variable  17 
+ 0            spare variable  18 
+ 0            spare variable  19 
+ 0            spare variable  20 
+ 0             0 means this is not yet the end of file
+ 1            Quick Test: triode of pentode flag
+ 250000       Quick Test: triode anode voltage setpoint (*1000)
+ 10000        Quick Test: triode anode voltage step in procenten (*1000)
+ 250000       Quick Test: triode screen voltage setpoint (*1000)
+ 10000        Quick Test: triode screen voltage step in procenten (*1000)
+-5000         Quick Test: triode grid voltage setpoint (*1000)
+ 10000        Quick Test: triode grid voltage step in procenten (*1000)
+ 0            Quick Test: triode nominal anode1 current (*1000)
+ 0            Quick Test: triode nominal anode2 current (*1000)
+ 250000       Quick Test: pentode anode voltage setpoint (*1000)
+ 10000        Quick Test: pentode anode voltage step in procenten (*1000)
+ 250000       Quick Test: pentode screen voltage setpoint (*1000)
+ 10000        Quick Test: pentode screen voltage step in procenten (*1000)
+-5000         Quick Test: pentode grid voltage setpoint (*1000)
+ 10000        Quick Test: pentode grid voltage step in procenten (*1000)
+ 0            Quick Test: pentode nominal anode current (*1000)
+ 0            Quick Test: pentode nominal screen current (*1000)
+ 0            Quick Test: pentode nominal anode resistance (*1000)
+ 0            Quick Test: pentode nominal transconductance (*1000)
+ 0            Quick Test: pentode nominal Mu (*1000)
+ 0            Quick Test: triode nominal anode resistance (*1000)
+ 0            Quick Test: triode nominal tranconductance (*1000)
+ 0            Quick Test: triode nominal Mu (*1000)
+ 0 
+ 0 
+ 0            spare variable  1 
+ 0            spare variable  2 
+ 0            spare variable  3 
+ 0            spare variable  4 
+ 0            spare variable  5 
+ 0            spare variable  6 
+ 0            spare variable  7 
+ 0            spare variable  8 
+ 0            spare variable  9 
+ 0            spare variable  10 
+ 0            spare variable  11 
+ 0             0 means this is not yet end of file
+ 1            number of points in stored curve
+-1   0   0   0   0   0   0 
+ 0             0 means this is not yet end of file
+ 1            number of points in actual curve
+-1   0   0   0   0   0   0 
+-1             -1 means this is the end of file

@@ -65,7 +65,9 @@ public sealed class SinglePointMeasurementController
 			ushort anodeCode = CommandCodeConverter.AnodeCode(profile.AnodeVoltage, supplyVoltage, calibration);
 			ushort screenCode = (ushort)((profile.ScreenVoltage > 0.0) ? CommandCodeConverter.ScreenCode(profile.ScreenVoltage, supplyVoltage, calibration) : 0);
 			ushort gridCode = (ushort)((!transport.IsEmulator) ? CommandCodeConverter.GridCode(profile.GridVoltage, calibration) : 0);
-			ushort fullHeaterCode = CommandCodeConverter.HeaterCode(profile.HeaterVoltage, supplyVoltage);
+			ushort fullHeaterCode = profile.RequiresExternalHeater
+				? (ushort)0
+				: CommandCodeConverter.HeaterCode(profile.HeaterVoltage, supplyVoltage);
 			Report(progress, MeasurementState.Configuring, $"Konfiguracja pomiaru; compliance {num} mA.", 8.0);
 			await transport.SendFilamentCodeAsync(0, cancellationToken);
 			await transport.SendStartMeasurementAsync(complianceCode, averageCode, 8, 8, cancellationToken);
@@ -150,6 +152,12 @@ public sealed class SinglePointMeasurementController
 
 	private static async Task RunHeaterRampAsync(TubeProfile profile, double supplyVoltage, ITracerTransport transport, SinglePointMeasurementOptions options, IProgress<MeasurementProgress>? progress, CancellationToken cancellationToken)
 	{
+		if (profile.RequiresExternalHeater)
+		{
+			await transport.SendFilamentCodeAsync(0, cancellationToken);
+			Report(progress, MeasurementState.HeaterRamp, "Żarzenie zewnętrzne — wyjście Vh uTracera pozostaje wyłączone.", 35.0, 0);
+			return;
+		}
 		int steps = 20;
 		for (int step = 1; step <= steps; step++)
 		{

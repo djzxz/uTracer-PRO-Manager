@@ -39,6 +39,7 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
     private bool _isConnected;
     private bool _isBusy;
     private bool _modifiedHardwareConfirmed;
+    private bool _externalHeaterConfirmed;
     private HardwareCapabilities _selectedHardware = HardwareCapabilities.StockSafe;
     private string _statusMessage = "Uruchamianie…";
     private string _connectionStatus = "ROZŁĄCZONY";
@@ -183,8 +184,10 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
             if (!SetProperty(ref _selectedProfile, value))
                 return;
 
+            ExternalHeaterConfirmed = false;
             OnPropertyChanged(nameof(SelectedProfileSummary));
             OnPropertyChanged(nameof(SelectedProfileReady));
+            OnPropertyChanged(nameof(RequiresExternalHeaterConfirmation));
             OnPropertyChanged(nameof(SelectedProfileStatus));
             OnPropertyChanged(nameof(ActiveTubeSummary));
             OnPropertyChanged(nameof(HeaterValue));
@@ -267,6 +270,22 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    public bool ExternalHeaterConfirmed
+    {
+        get => _externalHeaterConfirmed;
+        set
+        {
+            if (SetProperty(ref _externalHeaterConfirmed, value))
+            {
+                OnPropertyChanged(nameof(SelectedProfileReady));
+                RaiseCommandStates();
+            }
+        }
+    }
+
+    public bool RequiresExternalHeaterConfirmation =>
+        SelectedProfile?.RequiresExternalHeater == true;
+
     public bool AdvancedFirmwareEnabled => SelectedHardware.RequiresHardwareModification && ModifiedHardwareConfirmed;
 
     public bool HardwareReadyForMeasurement =>
@@ -340,7 +359,9 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
           $"Vg 40 V {_calibration.Vg40Factor:F4}  •  offset {_calibration.GridOffsetV:+0.0000;-0.0000;0.0000} V  •  " +
           $"slope {_calibration.GridSlope:F4}";
 
-    public bool SelectedProfileReady => CanLoadProfile(SelectedProfile);
+    public bool SelectedProfileReady =>
+        CanLoadProfile(SelectedProfile) &&
+        (!RequiresExternalHeaterConfirmation || ExternalHeaterConfirmed);
 
     public bool CanLoadHighlightedProfile => CanLoadProfile(HighlightedProfile);
 
@@ -356,7 +377,8 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
         : $"{PrimaryTubeModel(SelectedProfile)} • {PrimaryManufacturer(SelectedProfile)}";
 
     public string HeaterValue => SelectedProfile is { } profile
-        ? $"{profile.HeaterVoltage:0.##} V / {profile.HeaterCurrentAmp:0.##} A"
+        ? $"{profile.HeaterVoltage:0.##} V / {profile.HeaterCurrentAmp:0.##} A" +
+          (profile.RequiresExternalHeater ? " • ZEWNĘTRZNE DC" : string.Empty)
         : "—";
 
     public string VaVsValue => SelectedProfile is { } profile
@@ -1175,6 +1197,8 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
                 throw new NotSupportedException($"Sterownik protokołu {SelectedHardware.DisplayName} nie jest jeszcze aktywny.");
             if (SelectedHardware.RequiresHardwareModification && !ModifiedHardwareConfirmed)
                 throw new InvalidOperationException("Wybrany wariant wymaga potwierdzenia wykonanej modyfikacji sprzętowej.");
+            if (SelectedProfile.RequiresExternalHeater && !ExternalHeaterConfirmed)
+                throw new InvalidOperationException("Najpierw potwierdź podłączenie zewnętrznego zasilania żarzenia DC.");
 
             HardwareCapabilityGuard.EnsureProfileFits(SelectedProfile, SelectedHardware);
             var calibration = _transport.IsEmulator
@@ -1261,6 +1285,9 @@ public sealed class MainWindowViewModel : ObservableObject, IAsyncDisposable
 
             if (SelectedHardware.RequiresHardwareModification && !ModifiedHardwareConfirmed)
                 throw new InvalidOperationException("Najpierw potwierdź fizyczną modyfikację wybranego wariantu sprzętu.");
+            if (SelectedProfile.RequiresExternalHeater && !ExternalHeaterConfirmed)
+                throw new InvalidOperationException("Najpierw potwierdź podłączenie zewnętrznego zasilania żarzenia DC.");
+            ReferenceMeasurement.ExternalHeater = SelectedProfile.RequiresExternalHeater;
             var calibration = _transport.IsEmulator
                 ? CreateEmulatorCalibration()
                 : _calibration ?? throw new InvalidOperationException("Brak zapisanej kalibracji sprzętu.");

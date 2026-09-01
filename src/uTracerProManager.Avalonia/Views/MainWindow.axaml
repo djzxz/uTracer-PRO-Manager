@@ -96,7 +96,7 @@
                           ToolTip.Tip="Przeciągnij, aby zmienić wysokość paneli" />
 
             <Border Classes="card" Grid.Row="2">
-              <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="6">
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="6">
                 <TextBlock Classes="h2" Text="Mierzony egzemplarz" />
                 <TextBox Grid.Row="1" Text="{Binding SpecimenSearchQuery, UpdateSourceTrigger=PropertyChanged}"
                          Watermark="Szukaj zapisanego pomiaru po numerze, producencie lub typie">
@@ -120,7 +120,11 @@
                 </Grid>
                 <StackPanel Grid.Row="5"><TextBlock Classes="caption" Text="Tryb diagnostyczny"/><ComboBox ItemsSource="{Binding TestModes}" SelectedItem="{Binding SelectedTestMode}"/></StackPanel>
                 <StackPanel Grid.Row="6"><TextBlock Classes="caption" Text="Notatki"/><TextBox Text="{Binding TestNotes}" Watermark="opcjonalnie" AcceptsReturn="True" MaxHeight="72"/></StackPanel>
-                <WrapPanel Grid.Row="7" VerticalAlignment="Bottom">
+                <CheckBox Grid.Row="7" IsVisible="{Binding RequiresExternalHeaterConfirmation}"
+                          IsChecked="{Binding ExternalHeaterConfirmed}"
+                          Content="Potwierdzam podłączenie zewnętrznego zasilania żarzenia DC; Vh uTracera pozostaje wyłączone"
+                          Foreground="#A53030" FontWeight="SemiBold"/>
+                <WrapPanel Grid.Row="8" VerticalAlignment="Bottom">
                   <Button Classes="primary" Margin="0,0,6,0" Content="URUCHOM DIAGNOSTYKĘ" Command="{Binding RunTestCommand}" />
                   <Button Classes="danger" Content="PRZERWIJ" Command="{Binding CancelTestCommand}" />
                 </WrapPanel>

@@ -119,6 +119,7 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
         ConstantVs = profile.ScreenVoltage;
         ConstantVg = profile.GridVoltage;
         ConstantVh = profile.HeaterVoltage;
+        ExternalHeater = profile.RequiresExternalHeater;
         WarmupSeconds = Math.Clamp(profile.WarmupSeconds, 60, 1800);
         ComplianceMa = ResolveCompliance(profile);
         XStart = profile.CurveVaStartV > 0 ? profile.CurveVaStartV : Math.Max(2, profile.AnodeVoltage * 0.1);

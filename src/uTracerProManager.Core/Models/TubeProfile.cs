@@ -24,6 +24,13 @@ public sealed class TubeProfile
 
 	public double HeaterCurrentAmp { get; init; }
 
+	public string HeaterSupplyMode { get; init; } = "INTERNAL_OK";
+
+	public string HeaterSupplyNote { get; init; } = string.Empty;
+
+	public bool RequiresExternalHeater =>
+		string.Equals(HeaterSupplyMode, "EXTERNAL_DC_REQUIRED", StringComparison.OrdinalIgnoreCase);
+
 	public double AnodeVoltage { get; init; }
 
 	public double ScreenVoltage { get; init; }

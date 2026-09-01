@@ -67,7 +67,9 @@ public sealed class FullTestController
 				throw new InvalidOperationException($"Vsu={supply:F2} V jest poza zakresem 10–25 V.");
 			}
 			int compliance = ResolveCompliance(profile);
-			ushort fullHeaterCode = CommandCodeConverter.HeaterCode(profile.HeaterVoltage, supply);
+			ushort fullHeaterCode = profile.RequiresExternalHeater
+				? (ushort)0
+				: CommandCodeConverter.HeaterCode(profile.HeaterVoltage, supply);
 			await transport.SendFilamentCodeAsync(0, cancellationToken);
 			await transport.SendStartMeasurementAsync(CurrentLimitCodes.ForMilliAmps(compliance), AverageCode(averagingIndex), 8, 8, cancellationToken);
 			configured = true;
@@ -561,6 +563,12 @@ public sealed class FullTestController
 
 	private static async Task HeaterRampAsync(TubeProfile profile, ITracerTransport transport, double supply, FullTestOptions options, IProgress<FullTestProgress>? progress, CancellationToken cancellationToken)
 	{
+		if (profile.RequiresExternalHeater)
+		{
+			await transport.SendFilamentCodeAsync(0, cancellationToken);
+			Report(progress, FullTestStage.HeaterRamp, "Żarzenie zewnętrzne — wyjście Vh uTracera pozostaje wyłączone.", 15.0);
+			return;
+		}
 		for (int step = 1; step <= 20; step++)
 		{
 			cancellationToken.ThrowIfCancellationRequested();

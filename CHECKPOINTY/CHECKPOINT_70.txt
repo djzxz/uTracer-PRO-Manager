@@ -1,0 +1,19 @@
+uTracer PRO Manager — CHECKPOINT 70 / v2.92.0
+====================================================
+profiles_reviewed_this_iteration: 1000 (4x250 resolution pass)
+ready_before: 1190
+ready_added: 2
+ready_after: 1192
+blocked_after: 20413
+profiles_total: 21605
+integrity_check: ok
+foreign_key_errors: 0
+power_guard_95_violations_ready: 0
+duplicate_audit_delta: 0 new exact READY fingerprint groups vs CP69
+
+READY added:
+- Tung-Sol 6SN7WGTA — separate triode sections, 250 V / -8 V / 9 mA
+- Sylvania 5932 / 6L6WGA — canonical profile with aliases, 250/250 V / -14 V / 72 mA / 5 mA
+
+Policy: full-card resolution, exact manufacturer sources, separate sections/modes, no duplicate READY, 95% nominal power guard, no guessing.
+Next: continue unresolved CP69 full-card extraction; do not repeat CP69 catalog screen.

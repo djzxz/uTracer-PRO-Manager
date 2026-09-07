@@ -43,13 +43,13 @@ public sealed class ReferenceMeasurementController
         if (calibrationErrors.Count > 0)
             throw new InvalidOperationException("Kalibracja jest nieprawidłowa:\n- " + string.Join("\n- ", calibrationErrors));
 
-        // Krytyczne: pełny plan jest rozwijany i zatwierdzany przed pierwszą komendą START.
         var plan = ReferenceMeasurementPlanValidator.BuildAndValidate(profile, hardware, calibration, request);
         var targets = plan.Targets;
         var startedAt = DateTimeOffset.Now;
         var points = new List<ReferenceMeasurementPoint>(targets.Count);
         var configured = false;
         var highestVoltage = targets.Max(target => Math.Max(target.Va, target.Vs));
+        ReferenceMeasurementSampleBus.Start();
 
         try
         {
@@ -97,7 +97,6 @@ public sealed class ReferenceMeasurementController
                         request.ExternalHeater ? (ushort)0 : CommandCodeConverter.HeaterCode(target.Vh, supply),
                         request.AveragingIndex, cancellationToken);
 
-                // Druga linia obrony: limity są liczone z rzeczywistych, skorygowanych Va/Vs.
                 ReferenceMeasurementPlanValidator.ValidateMeasuredPoint(
                     profile, plan, target, reading.Va, reading.Vs, reading.Ia, reading.Is);
 
@@ -118,6 +117,7 @@ public sealed class ReferenceMeasurementController
 
                 points.Add(point);
                 sampleProgress?.Report(point);
+                ReferenceMeasurementSampleBus.Publish(point);
                 Report(progress,
                     $"Punkt {index + 1}/{targets.Count}: X={target.X:F3}, krok={target.Step:F3}.",
                     10 + 82.0 * (index + 1) / targets.Count, index + 1, targets.Count);
@@ -135,6 +135,10 @@ public sealed class ReferenceMeasurementController
             if (configured)
                 await SafeShutdownAsync(transport, highestVoltage, transport.IsEmulator, progress);
             throw;
+        }
+        finally
+        {
+            ReferenceMeasurementSampleBus.Complete();
         }
     }
 
@@ -239,8 +243,6 @@ public sealed class ReferenceMeasurementController
         }
     }
 
-    // Protokół producenta: 0x40 = auto averaging, a ręcznie 1/2/4/8/16/32.
-    // Indeks 7 pozostaje aliasem auto wyłącznie dla zgodności ze starszymi zapisami programu.
     private static byte AverageCode(int index) => index switch
     {
         0 => 0x40,

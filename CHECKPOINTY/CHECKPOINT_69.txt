@@ -1,0 +1,25 @@
+uTracer PRO Manager — CHECKPOINT 69 / v2.91.0
+====================================================
+generated_utc: 2026-09-07T13:36:33Z
+profiles_total: 21605
+profiles_reviewed_this_iteration: 1000 (4 x 250)
+ready_before: 1190
+ready_added: 0
+ready_after: 1190
+blocked_after: 20415
+checked_profiles_total: 21572
+catalog_url_indexed_in_block: 1000/1000
+integrity_check: ok
+foreign_key_errors: 0
+power_guard_95_violations_ready: 0
+database_sha256: 69804103eab5ba3630f35b5205ae198da11d42d7cfe7035de0d4f7bf08f391fd
+
+CP69 policy:
+- 1000 kolejnych kandydatów CATALOG_ONLY przeskanowano bez powtarzania wcześniejszego large_source_screen.
+- 1000/1000 ma wpis źródła/URL w frank_datasheets, ale sam indeks katalogowy nie jest pełną weryfikacją parametrów.
+- brak automatycznych promocji READY bez kompletnej karty: pinout + heater + operating point + limits + 95% power guard.
+- lampy wielosekcyjne i wielotrybowe nadal muszą być rozdzielane sekcyjnie/trybowo.
+- nie wprowadzono nowych duplikatów; istniejące grupy identycznych fingerprintów READY wymagają osobnej klasyfikacji alias/sekcja/tryb przed scaleniem.
+
+queue_next:
+- pełna ekstrakcja kart dla przeskanowanych CP69, priorytet audio/prostowniki/radiowo-wzmacniaczowe.

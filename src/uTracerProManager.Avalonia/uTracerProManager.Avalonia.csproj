@@ -4,9 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>uTracerProManager.Avalonia</AssemblyName>
     <RootNamespace>uTracerProManager.AvaloniaApp</RootNamespace>
-    <Version>1.2.7</Version>
-    <FileVersion>1.2.7.0</FileVersion>
-    <AssemblyVersion>1.2.7.0</AssemblyVersion>
+    <Version>1.3.0</Version>
+    <FileVersion>1.3.0.0</FileVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon />
     <PlatformTarget>x64</PlatformTarget>

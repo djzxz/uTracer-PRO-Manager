@@ -1,4 +1,9 @@
 $ErrorActionPreference = 'Stop'
+
+function Write-Utf8NoBom([string]$path, [string]$content) {
+    Set-Content -LiteralPath $path -Value $content -Encoding utf8NoBOM
+}
+
 $path = 'src/uTracerProManager.Avalonia/Views/MainWindow.axaml.cs'
 $text = Get-Content -Raw -LiteralPath $path
 
@@ -31,6 +36,25 @@ if (-not $text.Contains('_viewModel.ReferenceMeasurementCompleted += OnReference
 if (-not $text.Contains('DisposeReferenceCurveUiHooks();')) {
     throw 'CP78 UI patch verification failed: curve hooks are not disposed.'
 }
+Write-Utf8NoBom $path $text
 
-Set-Content -LiteralPath $path -Value $text -Encoding utf8NoBOM
-Write-Host 'CP78 UI hook patch applied successfully.'
+# Microsoft.Data.Sqlite 8 exposes BeginTransactionAsync as DbTransaction in this target.
+# Use the provider-specific synchronous BeginTransaction so command.Transaction remains
+# strongly typed as SqliteTransaction. Database I/O inside each transaction stays async.
+$transactionFiles = @(
+    'src/uTracerProManager.Infrastructure/Services/ReferenceCurveRepository.cs',
+    'src/uTracerProManager.Infrastructure/Services/LegacyReferenceCurveMigrationService.cs',
+    'src/uTracerProManager.Infrastructure/Services/ReferenceCurveTargetRepository.cs'
+)
+foreach ($transactionPath in $transactionFiles) {
+    $source = Get-Content -Raw -LiteralPath $transactionPath
+    $source = $source.Replace(
+        'await using var transaction = await connection.BeginTransactionAsync(cancellationToken);',
+        'using var transaction = connection.BeginTransaction();')
+    $source = $source.Replace(
+        'await transaction.CommitAsync(cancellationToken);',
+        'transaction.Commit();')
+    Write-Utf8NoBom $transactionPath $source
+}
+
+Write-Host 'CP78 UI/database compatibility patch applied successfully.'

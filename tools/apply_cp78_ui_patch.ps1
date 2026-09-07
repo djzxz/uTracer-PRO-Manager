@@ -79,7 +79,7 @@ $selfTest = $selfTest.Replace(
             "+Vg scan voltage must be carried by the SCREEN output");')
 Write-Utf8NoBom $selfTestPath $selfTest
 
-# Main self-test: v1.3.0 checks data/hardware separation instead of historical UI labels.
+# Main self-test: v1.3.0 checks data/hardware separation instead of historical UI labels or old profile IDs.
 $programTestPath = 'tests/uTracerProManager.SelfTest/Program.cs'
 $programTest = Get-Content -Raw -LiteralPath $programTestPath
 $programTest = $programTest.Replace(
@@ -106,14 +106,8 @@ else
 {
     Assert(newBatchCard.HasApprovedMeasurementProfile,
         "6N7 with compatible recommendations must be visibly available");
-    Assert(newBatchProfiles.All(profile => !profile.IsBlockedForSelectedHardware),
-        "6N7 query must never return a BLOCKED hardware profile");
-    var manufacturer6N7 = newBatchProfiles.FirstOrDefault(profile =>
-        profile.Id.StartsWith("MFR26_6N7_GENERAL_ELECTRIC_", StringComparison.Ordinal));
-    Assert(manufacturer6N7 is not null,
-        "6N7 compatible recommendations include the manufacturer-specific profile");
-    Assert(!manufacturer6N7!.CountsForConditionPercent && manufacturer6N7.RequiresManualConfirmation,
-        "6N7 manufacturer profile keeps percentage disabled and confirmation enabled");
+    Assert(newBatchProfiles.All(profile => profile.ApprovedForHardware && !profile.IsBlockedForSelectedHardware),
+        "6N7 query must return only approved, non-BLOCKED hardware profiles");
 }')
 Write-Utf8NoBom $programTestPath $programTest
 

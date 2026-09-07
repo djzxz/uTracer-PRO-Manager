@@ -65,4 +65,18 @@ foreach ($transactionPath in $transactionFiles) {
     Write-Utf8NoBom $transactionPath $source
 }
 
+# Floating-point axis values are compared with tolerance; this does not weaken the routing assertions.
+$selfTestPath = 'tests/uTracerProManager.SelfTest/SafetyRegressionSelfTests.cs'
+$selfTest = Get-Content -Raw -LiteralPath $selfTestPath
+$selfTest = $selfTest.Replace(
+'        Assert(positiveTargets.Select(point => point.Vs).SequenceEqual(new[] { 0.1, 1.325, 2.55, 3.775, 5.0 }),
+            "+Vg scan voltage must be carried by the SCREEN output");',
+'        var expectedPositiveGridVs = new[] { 0.1, 1.325, 2.55, 3.775, 5.0 };
+        Assert(positiveTargets.Count == expectedPositiveGridVs.Length &&
+               positiveTargets.Select(point => point.Vs)
+                   .Zip(expectedPositiveGridVs, (actual, expected) => Math.Abs(actual - expected) < 1e-9)
+                   .All(match => match),
+            "+Vg scan voltage must be carried by the SCREEN output");')
+Write-Utf8NoBom $selfTestPath $selfTest
+
 Write-Host 'CP78 UI/database/safety compatibility patch applied successfully.'

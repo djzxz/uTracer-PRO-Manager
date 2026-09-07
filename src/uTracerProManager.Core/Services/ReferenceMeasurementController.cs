@@ -6,7 +6,6 @@ namespace uTracerProManager.Core.Services;
 
 public sealed class ReferenceMeasurementController
 {
-    private sealed record Target(double X, double Step, double Va, double Vs, double Vg, double Vh);
     private sealed record Reading(double Ia, double Is, double Va, double Vs, string Status);
 
     private readonly SafetyValidator _safety = new();
@@ -18,7 +17,8 @@ public sealed class ReferenceMeasurementController
         HardwareCapabilities hardware,
         ReferenceMeasurementRequest request,
         IProgress<ReferenceMeasurementProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IProgress<ReferenceMeasurementPoint>? sampleProgress = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(transport);
@@ -31,6 +31,7 @@ public sealed class ReferenceMeasurementController
             throw new InvalidOperationException("Tester nie jest połączony.");
         if (!transport.IsEmulator && !hardware.SupportsCurrentProtocol)
             throw new NotSupportedException($"Sterownik protokołu {hardware.DisplayName} nie jest jeszcze aktywny.");
+
         HardwareCapabilityGuard.EnsureProfileFits(profile, hardware);
         var safety = _safety.ValidateProfile(profile);
         if (!safety.IsSafe)
@@ -42,16 +43,18 @@ public sealed class ReferenceMeasurementController
         if (calibrationErrors.Count > 0)
             throw new InvalidOperationException("Kalibracja jest nieprawidłowa:\n- " + string.Join("\n- ", calibrationErrors));
 
-        var targets = BuildTargets(request).ToArray();
-        ValidateTargets(profile, hardware, calibration, request, targets);
+        // Krytyczne: pełny plan jest rozwijany i zatwierdzany przed pierwszą komendą START.
+        var plan = ReferenceMeasurementPlanValidator.BuildAndValidate(profile, hardware, calibration, request);
+        var targets = plan.Targets;
         var startedAt = DateTimeOffset.Now;
-        var points = new List<ReferenceMeasurementPoint>(targets.Length);
+        var points = new List<ReferenceMeasurementPoint>(targets.Count);
         var configured = false;
         var highestVoltage = targets.Max(target => Math.Max(target.Va, target.Vs));
 
         try
         {
-            Report(progress, "Kontrola zasilania i przygotowanie skanu.", 1, 0, targets.Length);
+            Report(progress, plan.Summary, 0.5, 0, targets.Count);
+            Report(progress, "Kontrola zasilania i przygotowanie skanu.", 1, 0, targets.Count);
             var supplyReading = await transport.ReadAdcAsync(calibration, new AdcConversionOptions(), cancellationToken);
             var supply = transport.IsEmulator ? 19.2 :
                 supplyReading.Engineering?.SupplyVoltage ?? throw new InvalidOperationException("Nie odczytano Vsu.");
@@ -60,17 +63,20 @@ public sealed class ReferenceMeasurementController
 
             await transport.SendFilamentCodeAsync(0, cancellationToken);
             await transport.SendStartMeasurementAsync(
-                CurrentLimitCodes.ForMilliAmps(request.ComplianceMa),
-                AverageCode(request.AveragingIndex), 8, 8, cancellationToken);
+                plan.HardwareComplianceCode,
+                AverageCode(request.AveragingIndex),
+                plan.ScreenGainCode,
+                plan.AnodeGainCode,
+                cancellationToken);
             configured = true;
 
             var firstHeater = request.ExternalHeater ? 0 : targets[0].Vh;
             if (!request.ExternalHeater)
-                await RampHeaterAsync(firstHeater, supply, transport, request, progress, targets.Length, cancellationToken);
+                await RampHeaterAsync(firstHeater, supply, transport, request, progress, targets.Count, cancellationToken);
             await DelayAsync(request.WarmupSeconds * 1000, transport.IsEmulator, cancellationToken);
 
             double previousHeater = firstHeater;
-            for (var index = 0; index < targets.Length; index++)
+            for (var index = 0; index < targets.Count; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var target = targets[index];
@@ -91,10 +97,13 @@ public sealed class ReferenceMeasurementController
                         request.ExternalHeater ? (ushort)0 : CommandCodeConverter.HeaterCode(target.Vh, supply),
                         request.AveragingIndex, cancellationToken);
 
-                ValidateMeasuredPower(profile, request, target, reading);
-                points.Add(new ReferenceMeasurementPoint(
-                    index + 1,
-                    index / (request.Intervals + 1),
+                // Druga linia obrony: limity są liczone z rzeczywistych, skorygowanych Va/Vs.
+                ReferenceMeasurementPlanValidator.ValidateMeasuredPoint(
+                    profile, plan, target, reading.Va, reading.Vs, reading.Ia, reading.Is);
+
+                var point = new ReferenceMeasurementPoint(
+                    target.Sequence,
+                    target.CurveIndex,
                     target.Step,
                     target.X,
                     target.Va,
@@ -105,15 +114,18 @@ public sealed class ReferenceMeasurementController
                     target.Vh,
                     reading.Ia,
                     reading.Is,
-                    reading.Status));
+                    reading.Status);
+
+                points.Add(point);
+                sampleProgress?.Report(point);
                 Report(progress,
-                    $"Punkt {index + 1}/{targets.Length}: X={target.X:F3}, krok={target.Step:F3}.",
-                    10 + 82.0 * (index + 1) / targets.Length, index + 1, targets.Length);
+                    $"Punkt {index + 1}/{targets.Count}: X={target.X:F3}, krok={target.Step:F3}.",
+                    10 + 82.0 * (index + 1) / targets.Count, index + 1, targets.Count);
             }
 
             await SafeShutdownAsync(transport, highestVoltage, transport.IsEmulator, progress);
             configured = false;
-            Report(progress, "Skan zakończony.", 100, targets.Length, targets.Length);
+            Report(progress, "Skan zakończony.", 100, targets.Count, targets.Count);
             return new ReferenceMeasurementResult(
                 ReferenceMeasurementDefinition.For(request.Kind), request, profile, points,
                 startedAt, DateTimeOffset.Now, transport.IsEmulator);
@@ -126,96 +138,12 @@ public sealed class ReferenceMeasurementController
         }
     }
 
-    private static IEnumerable<Target> BuildTargets(ReferenceMeasurementRequest request)
-    {
-        var xs = BuildAxis(request.XStart, request.XStop, request.Intervals, request.LogarithmicX);
-        var maxVa = request.Kind switch
-        {
-            ReferenceMeasurementKind.GridSweepSteppedAnodeUltraLinear => request.SteppingValues.Max(),
-            ReferenceMeasurementKind.AnodeSweepSteppedGridUltraLinear => xs.Max(),
-            _ => Math.Max(request.ConstantVa, xs.Max())
-        };
-        foreach (var step in request.SteppingValues)
-        foreach (var x in xs)
-        {
-            yield return request.Kind switch
-            {
-                ReferenceMeasurementKind.GridSweepSteppedAnode => new(x, step, step, request.ConstantVs, x, request.ConstantVh),
-                ReferenceMeasurementKind.GridSweepSteppedTiedAnodeScreen => new(x, step, step, step, x, request.ConstantVh),
-                ReferenceMeasurementKind.AnodeSweepSteppedGrid => new(x, step, x, request.ConstantVs, step, request.ConstantVh),
-                ReferenceMeasurementKind.AnodeSweepSteppedScreen => new(x, step, x, step, request.ConstantVg, request.ConstantVh),
-                ReferenceMeasurementKind.TiedAnodeScreenSweepSteppedGrid => new(x, step, x, x, step, request.ConstantVh),
-                ReferenceMeasurementKind.ScreenSweepSteppedGrid => new(x, step, request.ConstantVa, x, step, request.ConstantVh),
-                ReferenceMeasurementKind.PositiveGridSweepSteppedAnode => new(x, step, step, x, 0, request.ConstantVh),
-                ReferenceMeasurementKind.AnodeSweepSteppedPositiveGrid => new(x, step, x, step, 0, request.ConstantVh),
-                ReferenceMeasurementKind.HeaterSweepSteppedGrid => new(x, step, request.ConstantVa, request.ConstantVs, step, x),
-                ReferenceMeasurementKind.HeaterSweepSteppedAnode => new(x, step, step, request.ConstantVs, request.ConstantVg, x),
-                ReferenceMeasurementKind.GridSweepSteppedAnodeUltraLinear =>
-                    new(x, step, step, UltraLinearScreen(step, maxVa, request.UltraLinearKPercent), x, request.ConstantVh),
-                ReferenceMeasurementKind.AnodeSweepSteppedGridUltraLinear =>
-                    new(x, step, x, UltraLinearScreen(x, maxVa, request.UltraLinearKPercent), step, request.ConstantVh),
-                ReferenceMeasurementKind.AnodeSweepSteppedGridSchadeFeedback =>
-                    new(x, step, x, request.ConstantVs, SchadeGrid(step, x, request.SchadeFeedbackPercent), request.ConstantVh),
-                _ => throw new ArgumentOutOfRangeException(nameof(request.Kind))
-            };
-        }
-    }
-
-    private static double[] BuildAxis(double start, double stop, int intervals, bool logarithmic)
-    {
-        var values = new double[intervals + 1];
-        for (var i = 0; i <= intervals; i++)
-        {
-            var fraction = (double)i / intervals;
-            values[i] = logarithmic
-                ? Math.Exp(Math.Log(start) + (Math.Log(stop) - Math.Log(start)) * fraction)
-                : start + (stop - start) * fraction;
-        }
-        return values;
-    }
-
-    private static double UltraLinearScreen(double va, double vaMax, double kPercent) =>
-        va + (1.0 - kPercent / 100.0) * (vaMax - va);
-
-    private static double SchadeGrid(double vgSet, double va, double feedbackPercent) =>
-        vgSet + (va - vgSet) * feedbackPercent / 100.0;
-
-    private static void ValidateTargets(
-        TubeProfile profile,
-        HardwareCapabilities hardware,
-        CalibrationProfile calibration,
-        ReferenceMeasurementRequest request,
-        IReadOnlyList<Target> targets)
-    {
-        var maxVa = Math.Min(hardware.MaxAnodeVoltage, calibration.MaxAnodeVoltage);
-        var maxVs = Math.Min(hardware.MaxScreenVoltage, calibration.MaxAnodeVoltage);
-        foreach (var target in targets)
-        {
-            if (target.Va is < 0 || target.Va > maxVa)
-                throw new InvalidOperationException($"Va={target.Va:F2} V przekracza zakres wybranego sprzętu/kalibracji.");
-            if (target.Vs is < 0 || target.Vs > maxVs)
-                throw new InvalidOperationException($"Vs={target.Vs:F2} V przekracza zakres wybranego sprzętu/kalibracji.");
-            if (target.Vg < hardware.MinGridVoltage || target.Vg > 0)
-                throw new InvalidOperationException($"Wyliczone Vg={target.Vg:F3} V jest poza zakresem {hardware.MinGridVoltage:F0}…0 V.");
-            if (!request.ExternalHeater && (target.Vh <= 0 || target.Vh > 24))
-                throw new InvalidOperationException($"Vh={target.Vh:F2} V jest poza bezpiecznym zakresem wewnętrznego sterownika.");
-            if (profile.MaxAnodeVoltage > 0 && target.Va > profile.MaxAnodeVoltage)
-                throw new InvalidOperationException($"Va={target.Va:F1} V przekracza katalogowe Va max profilu.");
-            if (profile.MaxScreenVoltage > 0 && target.Vs > profile.MaxScreenVoltage && !profile.IsDualTriode)
-                throw new InvalidOperationException($"Vs={target.Vs:F1} V przekracza katalogowe Vs max profilu.");
-        }
-        if (request.ComplianceMa > hardware.MaxPulseCurrentMa)
-            throw new InvalidOperationException("Compliance przekracza limit wybranego wariantu sprzętu.");
-        if (request.ComplianceMa > Math.Max(profile.AnodeComplianceMa, profile.ScreenComplianceMa) + 0.1)
-            throw new InvalidOperationException("Compliance jest większe niż zatwierdzony limit profilu.");
-    }
-
     private static async Task<Reading> MeasureCorrectedAsync(
         TubeProfile profile,
         ITracerTransport transport,
         CalibrationProfile calibration,
         double supply,
-        Target target,
+        ReferenceMeasurementTarget target,
         ushort heaterCode,
         int averagingIndex,
         CancellationToken cancellationToken)
@@ -234,26 +162,33 @@ public sealed class ReferenceMeasurementController
                 new AdcConversionOptions(averagingIndex, commandVa, commandVs, target.Vg), cancellationToken);
             if (result.CurrentLimitHit)
                 throw new CurrentLimitException("Status 11 — zadziałało ograniczenie prądowe.");
+
             var engineering = result.Engineering ?? throw new InvalidOperationException("Brak przeliczonych danych ADC.");
+            var vaProfileLimit = profile.MaxAnodeVoltage > 0 ? profile.MaxAnodeVoltage : calibration.MaxAnodeVoltage;
             var vaCorrection = correction.Correct(target.Va, commandVa, engineering.EstimatedAnodeVoltage,
-                Math.Min(profile.MaxAnodeVoltage, calibration.MaxAnodeVoltage));
+                Math.Min(vaProfileLimit, calibration.MaxAnodeVoltage));
+
             var vsLimit = profile.IsDualTriode
-                ? Math.Min(profile.MaxAnodeVoltage, calibration.MaxAnodeVoltage)
-                : profile.MaxScreenVoltage > 0 ? Math.Min(profile.MaxScreenVoltage, calibration.MaxAnodeVoltage) : calibration.MaxAnodeVoltage;
+                ? Math.Min(profile.MaxAnodeVoltage > 0 ? profile.MaxAnodeVoltage : calibration.MaxAnodeVoltage, calibration.MaxAnodeVoltage)
+                : profile.MaxScreenVoltage > 0
+                    ? Math.Min(profile.MaxScreenVoltage, calibration.MaxAnodeVoltage)
+                    : calibration.MaxAnodeVoltage;
             var vsCorrection = target.Vs > 0
                 ? correction.Correct(target.Vs, commandVs, engineering.MeasuredScreenVoltage, vsLimit)
                 : new VoltageCorrection(0, 0, 0, 0, 0, true, false);
+
             commandVa = vaCorrection.NewCommandVoltage;
             commandVs = vsCorrection.NewCommandVoltage;
             if (vaCorrection.InTolerance && vsCorrection.InTolerance)
                 break;
         }
+
         var reading = result?.Engineering ?? throw new InvalidOperationException("Nie wykonano punktu pomiarowego.");
         return new Reading(reading.AnodeCurrentMa, reading.ScreenCurrentMa,
             reading.EstimatedAnodeVoltage, reading.MeasuredScreenVoltage, result!.StatusCode);
     }
 
-    private static Reading Emulate(TubeProfile profile, Target target)
+    private static Reading Emulate(TubeProfile profile, ReferenceMeasurementTarget target)
     {
         var vaFactor = profile.AnodeVoltage > 0 ? Math.Pow(Math.Max(0.001, target.Va / profile.AnodeVoltage), 0.72) : 1;
         var gm = Math.Max(0.05, profile.NominalGmMaV);
@@ -268,16 +203,6 @@ public sealed class ReferenceMeasurementController
         var ia = iaNominal * vaFactor * gridFactor * heaterFactor * screenFactor;
         var isCurrent = Math.Max(0, profile.NominalScreenCurrentMa * vaFactor * gridFactor * heaterFactor * screenFactor);
         return new Reading(ia, isCurrent, target.Va, target.Vs, "EMULATOR — DANE SYNTETYCZNE");
-    }
-
-    private static void ValidateMeasuredPower(TubeProfile profile, ReferenceMeasurementRequest request, Target target, Reading reading)
-    {
-        if (reading.Ia > request.ComplianceMa * 0.95 || reading.Is > request.ComplianceMa * 0.95)
-            throw new InvalidOperationException("Prąd osiągnął 95% ustawionego compliance; skan przerwany.");
-        if (profile.MaxAnodePowerW > 0 && reading.Va * reading.Ia / 1000.0 > profile.MaxAnodePowerW * 0.95)
-            throw new InvalidOperationException("Moc anody osiągnęła 95% limitu katalogowego; skan przerwany.");
-        if (profile.MaxScreenPowerW > 0 && reading.Vs * reading.Is / 1000.0 > profile.MaxScreenPowerW * 0.95)
-            throw new InvalidOperationException("Moc siatki ekranowej osiągnęła 95% limitu katalogowego; skan przerwany.");
     }
 
     private static async Task RampHeaterAsync(
@@ -314,16 +239,18 @@ public sealed class ReferenceMeasurementController
         }
     }
 
+    // Protokół producenta: 0x40 = auto averaging, a ręcznie 1/2/4/8/16/32.
+    // Indeks 7 pozostaje aliasem auto wyłącznie dla zgodności ze starszymi zapisami programu.
     private static byte AverageCode(int index) => index switch
     {
-        0 => 64,
+        0 => 0x40,
         1 => 1,
         2 => 2,
         3 => 4,
         4 => 8,
         5 => 16,
         6 => 32,
-        7 => 64,
+        7 => 0x40,
         _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 

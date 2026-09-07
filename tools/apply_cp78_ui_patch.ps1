@@ -104,10 +104,15 @@ Assert(!newBatchProfiles[0].CountsForConditionPercent && newBatchProfiles[0].Req
 }
 else
 {
-    Assert(newBatchProfiles.Count == 1 &&
-           newBatchProfiles[0].Id.StartsWith("MFR26_6N7_GENERAL_ELECTRIC_", StringComparison.Ordinal),
-        "6N7 resolves at most one manufacturer-specific compatible profile");
-    Assert(!newBatchProfiles[0].CountsForConditionPercent && newBatchProfiles[0].RequiresManualConfirmation,
+    Assert(newBatchCard.HasApprovedMeasurementProfile,
+        "6N7 with compatible recommendations must be visibly available");
+    Assert(newBatchProfiles.All(profile => !profile.IsBlockedForSelectedHardware),
+        "6N7 query must never return a BLOCKED hardware profile");
+    var manufacturer6N7 = newBatchProfiles.FirstOrDefault(profile =>
+        profile.Id.StartsWith("MFR26_6N7_GENERAL_ELECTRIC_", StringComparison.Ordinal));
+    Assert(manufacturer6N7 is not null,
+        "6N7 compatible recommendations include the manufacturer-specific profile");
+    Assert(!manufacturer6N7!.CountsForConditionPercent && manufacturer6N7.RequiresManualConfirmation,
         "6N7 manufacturer profile keeps percentage disabled and confirmation enabled");
 }')
 Write-Utf8NoBom $programTestPath $programTest

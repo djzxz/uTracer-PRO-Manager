@@ -109,6 +109,20 @@ else
     Assert(newBatchProfiles.All(profile => profile.ApprovedForHardware && !profile.IsBlockedForSelectedHardware),
         "6N7 query must return only approved, non-BLOCKED hardware profiles");
 }')
+$programTest = $programTest.Replace(
+'finally
+{
+    Directory.Delete(historyDirectory, recursive: true);
+}
+
+var reportDirectory',
+'finally
+{
+    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+    Directory.Delete(historyDirectory, recursive: true);
+}
+
+var reportDirectory')
 Write-Utf8NoBom $programTestPath $programTest
 
 Write-Host 'CP78 UI/database/safety compatibility patch applied successfully.'

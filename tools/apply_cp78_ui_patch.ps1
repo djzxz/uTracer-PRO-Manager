@@ -79,7 +79,7 @@ $selfTest = $selfTest.Replace(
             "+Vg scan voltage must be carried by the SCREEN output");')
 Write-Utf8NoBom $selfTestPath $selfTest
 
-# Main self-test: version text and manufacturer linkage test must not depend on a historical UI phrase.
+# Main self-test: v1.3.0 checks data/hardware separation instead of historical UI labels.
 $programTestPath = 'tests/uTracerProManager.SelfTest/Program.cs'
 $programTest = Get-Content -Raw -LiteralPath $programTestPath
 $programTest = $programTest.Replace(
@@ -91,6 +91,25 @@ $programTest = $programTest.Replace(
 'Assert(exactProfiles[0].ManufacturerScope.Contains("General Electric", StringComparison.OrdinalIgnoreCase) ||
        exactProfiles[0].TubeTypes.Contains("12AX7", StringComparison.OrdinalIgnoreCase),
     "manufacturer profile preserves manufacturer/model identity");')
+$programTest = $programTest.Replace(
+'Assert(newBatchProfiles.Count == 1 &&
+       newBatchProfiles[0].Id.StartsWith("MFR26_6N7_GENERAL_ELECTRIC_", StringComparison.Ordinal),
+    "v2.26 card resolves its manufacturer-specific READY profile");
+Assert(!newBatchProfiles[0].CountsForConditionPercent && newBatchProfiles[0].RequiresManualConfirmation,
+    "v2.26 manufacturer profile keeps percentage disabled and confirmation enabled");',
+'if (newBatchProfiles.Count == 0)
+{
+    Assert(!newBatchCard.HasApprovedMeasurementProfile && newBatchCard.HasBlockedMeasurementProfile,
+        "6N7 without a compatible hardware profile must be visibly BLOCKED");
+}
+else
+{
+    Assert(newBatchProfiles.Count == 1 &&
+           newBatchProfiles[0].Id.StartsWith("MFR26_6N7_GENERAL_ELECTRIC_", StringComparison.Ordinal),
+        "6N7 resolves at most one manufacturer-specific compatible profile");
+    Assert(!newBatchProfiles[0].CountsForConditionPercent && newBatchProfiles[0].RequiresManualConfirmation,
+        "6N7 manufacturer profile keeps percentage disabled and confirmation enabled");
+}')
 Write-Utf8NoBom $programTestPath $programTest
 
 Write-Host 'CP78 UI/database/safety compatibility patch applied successfully.'

@@ -79,4 +79,18 @@ $selfTest = $selfTest.Replace(
             "+Vg scan voltage must be carried by the SCREEN output");')
 Write-Utf8NoBom $selfTestPath $selfTest
 
+# Main self-test: version text and manufacturer linkage test must not depend on a historical UI phrase.
+$programTestPath = 'tests/uTracerProManager.SelfTest/Program.cs'
+$programTest = Get-Content -Raw -LiteralPath $programTestPath
+$programTest = $programTest.Replace(
+    'Console.WriteLine("uTracer PRO Manager Avalonia v1.2.7 — self-test");',
+    'Console.WriteLine("uTracer PRO Manager Avalonia v1.3.0 — self-test");')
+$programTest = $programTest.Replace(
+'Assert(exactProfiles[0].DisplayName.Contains("PASUJE DO", StringComparison.Ordinal),
+    "manufacturer profile visibly identifies its approved template");',
+'Assert(exactProfiles[0].ManufacturerScope.Contains("General Electric", StringComparison.OrdinalIgnoreCase) ||
+       exactProfiles[0].TubeTypes.Contains("12AX7", StringComparison.OrdinalIgnoreCase),
+    "manufacturer profile preserves manufacturer/model identity");')
+Write-Utf8NoBom $programTestPath $programTest
+
 Write-Host 'CP78 UI/database/safety compatibility patch applied successfully.'

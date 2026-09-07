@@ -34,7 +34,7 @@ public static class ReferenceMeasurementPlanValidator
                 ? "Profil nie jest zgodny z wybranym wariantem sprzętu."
                 : profile.HardwareCompatibilityReason);
 
-        if (string.Equals(profile.HardwareCompatibilityStatus, "READY_EXTERNAL_HEATER", StringComparison.OrdinalIgnoreCase) && !request.ExternalHeater)
+        if (profile.RequiresExternalHeater && !request.ExternalHeater)
             throw new InvalidOperationException("Ten profil wymaga zewnętrznego zasilacza żarzenia. Wewnętrzne żarzenie jest zablokowane.");
         if (request.ExternalHeater && !request.ExternalHeaterSupplyConfirmed)
             throw new InvalidOperationException("Nie potwierdzono podłączenia i ustawienia zewnętrznego zasilacza żarzenia.");
@@ -213,8 +213,8 @@ public static class ReferenceMeasurementPlanValidator
 
     private static byte RangeCode(int index) => index switch
     {
-        0 => 0x08, // firmware auto-range
-        >= 1 and <= 8 => (byte)(index - 1), // PGA113: 1x,2x,5x,10x,20x,50x,100x,200x
+        0 => 0x08,
+        >= 1 and <= 8 => (byte)(index - 1),
         _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 

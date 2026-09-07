@@ -14,6 +14,21 @@ public sealed class ReferenceCurveRepository : IReferenceCurveRepository
     private const string MigrationId = "2026-09-07-reference-curves-v2";
     private readonly string _databasePath;
 
+    private sealed record SeriesMetadata(
+        string Id,
+        string ProfileId,
+        string Section,
+        string SourceKind,
+        string SourceTitle,
+        string SourceUrl,
+        string SourcePage,
+        string Mode,
+        DateTimeOffset CapturedAt,
+        string DigitizationStatus,
+        double Quality,
+        string ExtractionVersion,
+        bool HumanReviewed);
+
     public ReferenceCurveRepository(string databasePath)
     {
         if (string.IsNullOrWhiteSpace(databasePath))
@@ -177,10 +192,11 @@ VALUES(
 
         await using var connection = CreateConnection();
         await connection.OpenAsync(cancellationToken);
-        var candidates = new List<ReferenceCurveSeries>();
 
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
+        var metadata = new List<SeriesMetadata>();
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = """
 SELECT id, profile_id, section, source_kind, source_title, source_url, source_page,
        mode, captured_utc, digitization_status, quality, extraction_version, human_reviewed
 FROM reference_curve_series_v2
@@ -190,35 +206,55 @@ WHERE profile_id = $profile COLLATE NOCASE
   AND ($source_kind = '' OR source_kind = $source_kind COLLATE NOCASE)
 ORDER BY human_reviewed DESC, quality DESC, captured_utc DESC;
 """;
-        command.Parameters.AddWithValue("$profile", request.ProfileId);
-        command.Parameters.AddWithValue("$section", request.Section);
-        command.Parameters.AddWithValue("$mode", request.Mode ?? string.Empty);
-        command.Parameters.AddWithValue("$source_kind", request.SourceKind ?? string.Empty);
+            command.Parameters.AddWithValue("$profile", request.ProfileId);
+            command.Parameters.AddWithValue("$section", request.Section);
+            command.Parameters.AddWithValue("$mode", request.Mode ?? string.Empty);
+            command.Parameters.AddWithValue("$source_kind", request.SourceKind ?? string.Empty);
 
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                metadata.Add(new SeriesMetadata(
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    reader.GetString(3),
+                    reader.GetString(4),
+                    reader.GetString(5),
+                    reader.GetString(6),
+                    reader.GetString(7),
+                    DateTimeOffset.Parse(reader.GetString(8)),
+                    reader.GetString(9),
+                    reader.GetDouble(10),
+                    reader.GetString(11),
+                    reader.GetInt64(12) != 0));
+            }
+        }
+
+        var candidates = new List<ReferenceCurveSeries>();
+        foreach (var item in metadata)
         {
-            var id = reader.GetString(0);
-            var points = await LoadPointsAsync(connection, id, cancellationToken);
+            var points = await LoadPointsAsync(connection, item.Id, cancellationToken);
             var series = new ReferenceCurveSeries(
-                id,
-                reader.GetString(1),
-                reader.GetString(2),
-                reader.GetString(3),
-                reader.GetString(4),
-                reader.GetString(5),
-                reader.GetString(6),
-                reader.GetString(7),
-                DateTimeOffset.Parse(reader.GetString(8)),
-                reader.GetString(9),
-                reader.GetDouble(10),
-                reader.GetString(11),
-                reader.GetInt64(12) != 0,
+                item.Id,
+                item.ProfileId,
+                item.Section,
+                item.SourceKind,
+                item.SourceTitle,
+                item.SourceUrl,
+                item.SourcePage,
+                item.Mode,
+                item.CapturedAt,
+                item.DigitizationStatus,
+                item.Quality,
+                item.ExtractionVersion,
+                item.HumanReviewed,
                 points);
 
             if (MatchesBias(series, request))
                 candidates.Add(series);
         }
+
         return candidates;
     }
 
@@ -289,11 +325,11 @@ ORDER BY sequence;
             throw new InvalidOperationException("Nie zapisuje się pustej serii.");
         if (series.Points.Select(point => point.Sequence).Distinct().Count() != series.Points.Count)
             throw new InvalidOperationException("Numery sequence w serii muszą być unikalne.");
-        if (string.Equals(series.SourceKind, "CATALOG", StringComparison.OrdinalIgnoreCase) && !series.HumanReviewed)
+        if (string.Equals(series.SourceKind, "CATALOG", StringComparison.OrdinalIgnoreCase) &&
+            !series.HumanReviewed &&
+            string.Equals(series.DigitizationStatus, "READY", StringComparison.OrdinalIgnoreCase))
         {
-            // Zapis roboczy jest dozwolony, ale status READY nie może zostać nadany automatycznie.
-            if (string.Equals(series.DigitizationStatus, "READY", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Krzywa katalogowa nie może dostać READY bez kontroli człowieka.");
+            throw new InvalidOperationException("Krzywa katalogowa nie może dostać READY bez kontroli człowieka.");
         }
     }
 

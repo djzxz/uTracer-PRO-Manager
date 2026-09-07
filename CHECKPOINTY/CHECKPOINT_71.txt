@@ -1,0 +1,23 @@
+uTracer PRO Manager — CHECKPOINT 71 / v2.93.0
+====================================================
+checkpoint: 71
+database_version: 2.93.0
+generated_utc: 2026-09-07T15:35:49Z
+profiles_reviewed_this_iteration: 1000
+bulk_batches: 4x250
+ready_before: 1192
+ready_added: 0
+ready_after: 1192
+blocked_after: 20413
+profiles_total: 21605
+integrity_check: ok
+foreign_key_errors: 0
+power_guard_95_violations_ready: 0
+duplicate_audit_delta: 0 new READY duplicate groups
+checkpoint_overlap_cp69: 0
+checkpoint_overlap_cp70: 0
+decision_counts: KEEP_BLOCKED_STOCK_HARDWARE=641; KEEP_BLOCKED_POWER95=225; REDUNDANT_ALIAS_KEEP_BLOCKED=83; REDUNDANT_FINGERPRINT_KEEP_BLOCKED=42; KEEP_BLOCKED_FULL_EXACT_SOURCE_REQUIRED=9
+policy: BULK_EXACT_SOURCE_RESOLUTION__NO_DUPLICATE_READY__STOCK_HARDWARE_GUARD__POWER95__NO_GUESSING
+queue_next: continue with candidates not present in CP69/CP70/CP71; prioritize exact primary-source full-card resolution
+database_sha256: c13513209bb6e09169b63ec59ec9398186b8a1ddd5a7aacf1cd4ef8316d829a2
+zip_sha256: 1091d2c511f04b8f05c65c1204cc627110ac31a372441da7fc36c22e12007550

@@ -26,11 +26,46 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore
-        run: dotnet restore uTracerProManager.sln
+      - name: Apply CP78 UI hooks
+        shell: pwsh
+        run: ./tools/apply_cp78_ui_patch.ps1
 
-      - name: Build Release
-        run: dotnet build uTracerProManager.sln -c Release --no-restore
+      - name: Restore Avalonia
+        run: dotnet restore src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj
+
+      - name: Restore self-tests
+        run: dotnet restore tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj
+
+      - name: Build Avalonia Release
+        run: dotnet build src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj -c Release --no-restore
+
+      - name: Build self-tests Release
+        run: dotnet build tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj -c Release --no-restore
 
       - name: Run self-tests
         run: dotnet run --project tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj -c Release --no-build
+
+      - name: Publish Windows x64 self-contained
+        run: dotnet publish src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj -c Release -r win-x64 --self-contained true --no-restore -o artifacts/program
+
+      - name: Package program and full source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          Compress-Archive -Path artifacts/program/* -DestinationPath artifacts/uTracer_PRO_Manager_v1_3_0_WIN_X64.zip -CompressionLevel Optimal -Force
+          $sourcePaths = @(
+            'src', 'tests', 'tools', 'docs', 'DOKUMENTACJA', 'CHECKPOINTY',
+            'README.md', 'README_PL.md', 'URUCHOMIENIE.txt',
+            'Directory.Build.props', 'NuGet.Config', '.gitattributes', '.gitignore'
+          ) | Where-Object { Test-Path $_ }
+          Compress-Archive -Path $sourcePaths -DestinationPath artifacts/uTracer_PRO_Manager_v1_3_0_SOURCE.zip -CompressionLevel Optimal -Force
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: utracer-pro-manager-v1-3-0-cp78
+          path: |
+            artifacts/uTracer_PRO_Manager_v1_3_0_WIN_X64.zip
+            artifacts/uTracer_PRO_Manager_v1_3_0_SOURCE.zip
+          if-no-files-found: error
+          retention-days: 30

@@ -16,6 +16,7 @@ public sealed class ReferenceCurveSessionService
 {
     private readonly IReferenceCurveRepository _repository;
     private readonly LegacyReferenceCurveMigrationService _legacyMigration;
+    private readonly ReferenceCurveTargetRepository _targets;
     private readonly ReferenceMeasurementMetricsService _metrics = new();
     private readonly ReferenceCurveComparisonService _comparison = new();
     private readonly ReferenceCurveAssessmentService _assessment = new();
@@ -24,12 +25,15 @@ public sealed class ReferenceCurveSessionService
     {
         _repository = new ReferenceCurveRepository(databasePath);
         _legacyMigration = new LegacyReferenceCurveMigrationService(databasePath);
+        _targets = new ReferenceCurveTargetRepository(databasePath);
     }
 
     public async Task<LegacyCurveMigrationResult> InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _repository.InitializeAsync(cancellationToken);
-        return await _legacyMigration.MigrateAsync(cancellationToken);
+        var migration = await _legacyMigration.MigrateAsync(cancellationToken);
+        await _targets.SeedFromLegacyPlansAsync(cancellationToken);
+        return migration;
     }
 
     public async Task<ReferenceCurveSessionResult> SaveAndCompareAsync(
@@ -68,7 +72,6 @@ public sealed class ReferenceCurveSessionService
             }
             catch (InvalidOperationException)
             {
-                // Kandydat bez wspólnych punktów pozostaje widoczny w bazie, ale nie jest oceniany.
             }
         }
 

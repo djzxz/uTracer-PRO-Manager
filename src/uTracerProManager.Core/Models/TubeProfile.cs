@@ -56,7 +56,10 @@ public sealed class TubeProfile
         ApprovedForHardware ? ProfileDataReadiness.Ready : ProfileDataReadiness.Blocked;
 
     public bool RequiresExternalHeater =>
-        string.Equals(HardwareCompatibilityStatus, "READY_EXTERNAL_HEATER", StringComparison.OrdinalIgnoreCase);
+        string.Equals(HardwareCompatibilityStatus, "READY_EXTERNAL_HEATER", StringComparison.OrdinalIgnoreCase) ||
+        ContainsExternalHeaterRequirement(HardwareCompatibilityReason) ||
+        ContainsExternalHeaterRequirement(CatalogCompatibilityNote) ||
+        ContainsExternalHeaterRequirement(Notes);
 
     public bool IsBlockedForSelectedHardware =>
         !ApprovedForHardware ||
@@ -122,4 +125,21 @@ public sealed class TubeProfile
         !CountsForConditionPercent ? "TYLKO PORÓWNANIE" : "LICZY KONDYCJĘ";
 
     public override string ToString() => DisplayName;
+
+    private static bool ContainsExternalHeaterRequirement(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+        var external = text.Contains("external", StringComparison.OrdinalIgnoreCase) ||
+                       text.Contains("zewnętrz", StringComparison.OrdinalIgnoreCase) ||
+                       text.Contains("zewnetrz", StringComparison.OrdinalIgnoreCase);
+        var heater = text.Contains("heater", StringComparison.OrdinalIgnoreCase) ||
+                     text.Contains("żarzeni", StringComparison.OrdinalIgnoreCase) ||
+                     text.Contains("zarzeni", StringComparison.OrdinalIgnoreCase);
+        var required = text.Contains("required", StringComparison.OrdinalIgnoreCase) ||
+                       text.Contains("wymagan", StringComparison.OrdinalIgnoreCase) ||
+                       text.Contains("isolated", StringComparison.OrdinalIgnoreCase) ||
+                       text.Contains("izolowan", StringComparison.OrdinalIgnoreCase);
+        return external && heater && required;
+    }
 }

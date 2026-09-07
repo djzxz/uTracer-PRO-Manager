@@ -54,7 +54,7 @@ internal static class SafetyRegressionSelfTests
         Assert(positiveTargets.Select(point => point.Vs).SequenceEqual(new[] { 0.1, 1.325, 2.55, 3.775, 5.0 }),
             "+Vg scan voltage must be carried by the SCREEN output");
 
-        var externalProfile = PowerTubeProfile() withCompatibility("READY_EXTERNAL_HEATER");
+        var externalProfile = PowerTubeProfile().withCompatibility("READY_EXTERNAL_HEATER");
         AssertThrows<InvalidOperationException>(() =>
             ReferenceMeasurementPlanValidator.BuildAndValidate(
                 externalProfile, HardwareCapabilities.StockSafe, calibration, request),

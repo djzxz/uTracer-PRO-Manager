@@ -1,0 +1,27 @@
+uTracer PRO Manager — CHECKPOINT 67 / v2.89.0
+====================================================
+generated_utc: 2026-09-07T11:50:00Z
+profiles_total: 21605
+ready_before: 1177
+profiles_reviewed_this_iteration: 6
+ready_added: 4
+ready_after: 1181
+blocked_after: 20424
+checked_profiles_total: 21572
+cp65_manual_recheck_remaining: 0
+integrity_check: ok
+foreign_key_errors: 0
+database_sha256: f65a0243e3bcbcdd94cf4b532697959d0c1ca43bddb1f47b06360ff1d68a9b1c
+
+CP67 highlights:
+- E82CC Lorenz x2: exact-source duplicates aligned to the already manually verified Lorenz E82CC profile; dual triode sections must be measured separately; READY.
+- GE 6K6GT: profile narrowed to exact General Electric 6K6GT and sweep aligned to verified GE profile; READY.
+- RCA RC30 ECC81/12AT7: RC-30 catalog pages 411-412 verified; safe 100 V point used; dual triode sections measured separately; READY.
+- Philips ECL82 pentode and RCA 6BM8 pentode: recognized as valid separate pentode sections/modes rather than compared against triode values; remain BLOCKED because current documented operating points do not preserve the 5% power margin required by project policy.
+- CP65 manual recheck queue closed without duplicates.
+
+queue_next:
+- continue CP64 visual pending and remaining blocked candidates
+- when a tube contains multiple systems/sections or supports distinct modes, verify each section/mode independently
+- do not copy triode values into pentode/tetrode mode or vice versa
+- use catalog/manual multi-type PDFs even when the PDF filename is the first tube listed rather than the requested tube

@@ -1,0 +1,21 @@
+uTracer PRO Manager — CHECKPOINT 66 / v2.88.0
+====================================================
+generated_utc: 2026-09-07T11:42:00Z
+profiles_total: 21605
+ready_before: 1176
+external_candidates_processed: 2
+source_fields_corrected: 2 profiles
+ready_added: 1
+ready_after: 1177
+blocked_after: 20428
+checked_profiles_total: 21572
+integrity_check: ok
+foreign_key_errors: 0
+database_sha256: 93d7bfbbbfc559258146f71a8ca8392e634430892c2d5c425f5dc89c88ee68bd
+
+CP66 highlights:
+- Tung-Sol 6189/12AU7WA: corrected vintage datasheet limits to 330 V / 3.0 W and promoted READY with 95% dissipation guard.
+- GE 6K6GT: corrected source point Va 250 V and rp 90 kOhm; remains BLOCKED pending curve/compliance power guard.
+
+Persistent package: ChatGPT Library /uTracer/uTracer_v2_88_0_CHECKPOINT_66.zip
+Next: continue remaining CP65 manual rechecks and CP64 visual pending without duplicates.

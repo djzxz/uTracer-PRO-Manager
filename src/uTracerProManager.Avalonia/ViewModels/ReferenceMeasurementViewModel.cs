@@ -41,15 +41,18 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     private bool _showGrid = true;
     private bool _useColor = true;
     private bool _keepPlot;
+    private bool _showCatalogReference = true;
+    private bool _livePlotPaused;
     private string _plotTitle = "Charakterystyki lampy";
     private string _status = "Wybierz profil i ustaw rodzaj skanu.";
+    private string _comparisonSummary = "Porównanie z katalogiem: jeszcze nie wykonano.";
     private double _progress;
 
     public IReadOnlyList<ReferenceMeasurementDefinition> MeasurementTypes => ReferenceMeasurementDefinition.All;
     public IReadOnlyList<int> AveragingOptions { get; } = Enumerable.Range(0, 7).ToArray();
     public IReadOnlyList<int> ComplianceOptions { get; } = CurrentLimitCodes.SupportedMilliAmps;
     public IReadOnlyList<int> RangeOptions { get; } = Enumerable.Range(0, 9).ToArray();
-    public IReadOnlyList<string> YVariables { get; } = ["Ia [mA]", "Is [mA]", "Brak"];
+    public IReadOnlyList<string> YVariables { get; } = ["Ia [mA]", "Is [mA]", "gm [mA/V]", "Rp [kΩ]", "μ", "Brak"];
     public IReadOnlyList<string> LineStyles { get; } = ["Linie i punkty", "Linie", "Punkty"];
     public IReadOnlyList<string> ScaleModes { get; } = ["Automatyczna", "Ręczna"];
 
@@ -118,8 +121,11 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     public bool ShowGrid { get => _showGrid; set => SetProperty(ref _showGrid, value); }
     public bool UseColor { get => _useColor; set => SetProperty(ref _useColor, value); }
     public bool KeepPlot { get => _keepPlot; set => SetProperty(ref _keepPlot, value); }
+    public bool ShowCatalogReference { get => _showCatalogReference; set => SetProperty(ref _showCatalogReference, value); }
+    public bool LivePlotPaused { get => _livePlotPaused; set => SetProperty(ref _livePlotPaused, value); }
     public string PlotTitle { get => _plotTitle; set => SetProperty(ref _plotTitle, value); }
     public string Status { get => _status; set => SetProperty(ref _status, value); }
+    public string ComparisonSummary { get => _comparisonSummary; set => SetProperty(ref _comparisonSummary, value); }
     public double Progress { get => _progress; set => SetProperty(ref _progress, value); }
 
     public void ApplyProfile(TubeProfile profile)
@@ -140,7 +146,8 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
 
         AnodeRangeIndex = 0;
         ScreenRangeIndex = 0;
-        ExternalHeater = string.Equals(profile.HardwareCompatibilityStatus, "READY_EXTERNAL_HEATER", StringComparison.OrdinalIgnoreCase);
+        ExternalHeater = profile.RequiresExternalHeater;
+        ComparisonSummary = "Porównanie z katalogiem: oczekuje na nowy pomiar.";
 
         XStart = profile.CurveVaStartV > 0 ? profile.CurveVaStartV : Math.Max(2, profile.AnodeVoltage * 0.1);
         XStop = profile.CurveVaStopV > XStart ? profile.CurveVaStopV : Math.Max(XStart + 10, profile.AnodeVoltage);

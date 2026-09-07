@@ -1,0 +1,25 @@
+uTracer PRO Manager — CHECKPOINT 68 / v2.90.0
+====================================================
+generated_utc: 2026-09-07T12:50:00Z
+profiles_total: 21605
+ready_before: 1181
+profiles_reviewed_this_iteration: 9
+ready_added: 9
+ready_after: 1190
+blocked_after: 20415
+checked_profiles_total: 21572
+integrity_check: ok
+foreign_key_errors: 0
+database_sha256: dc6dc5d71e1e562d03798b828e0585e828df53e9fca31643f9b9c942451c7b65
+
+CP68 highlights:
+- 9 profili promowanych wyłącznie przez dokładne dopasowanie do istniejącego zatwierdzonego profilu z tego samego źródła producenta (ten sam URL i odzyskany SHA-256).
+- zbyt szerokie aliasy typów i producentów zostały zawężone do danych faktycznie potwierdzonych przez kartę źródłową.
+- nie kopiowano danych pomiędzy różnymi producentami.
+- lampy wielosekcyjne pozostają obsługiwane sekcyjnie; każda sekcja/tryb musi być weryfikowana niezależnie.
+- interfejs ręcznej edycji profili non-READY nie został zmieniony.
+
+queue_next:
+- kontynuować nierozstrzygnięte profile CP64 / manual visual pending
+- preferować dokładne karty producenta i katalogi wielotypowe
+- nie powtarzać profili już zamkniętych w CP65–CP68

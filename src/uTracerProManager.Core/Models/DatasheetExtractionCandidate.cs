@@ -5,8 +5,9 @@ public sealed record ExtractedField<T>(
     double Confidence,
     string Evidence,
     bool RequiresHumanReview)
+    where T : struct
 {
-    public bool IsUsable => Value is not null && Confidence >= 0.90 && !RequiresHumanReview;
+    public bool IsUsable => Value.HasValue && Confidence >= 0.90 && !RequiresHumanReview;
 }
 
 public sealed record DatasheetExtractionCandidate(

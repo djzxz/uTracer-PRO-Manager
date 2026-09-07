@@ -46,13 +46,18 @@ jobs:
         run: dotnet run --project tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj -c Release --no-build
 
       - name: Publish Windows x64 self-contained
-        run: dotnet publish src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj -c Release -r win-x64 --self-contained true --no-restore -o artifacts/program
+        run: dotnet publish src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj -c Release -r win-x64 --self-contained true -o artifacts/program
 
       - name: Package program and full source
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path artifacts -Force | Out-Null
           Compress-Archive -Path artifacts/program/* -DestinationPath artifacts/uTracer_PRO_Manager_v1_3_0_WIN_X64.zip -CompressionLevel Optimal -Force
+
+          Get-ChildItem -Path src,tests -Directory -Recurse -Force |
+            Where-Object { $_.Name -in @('bin','obj') } |
+            Remove-Item -Recurse -Force
+
           $sourcePaths = @(
             'src', 'tests', 'tools', 'docs', 'DOKUMENTACJA', 'CHECKPOINTY',
             'README.md', 'README_PL.md', 'URUCHOMIENIE.txt',

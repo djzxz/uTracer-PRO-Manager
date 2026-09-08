@@ -48,6 +48,10 @@ jobs:
         shell: pwsh
         run: ./tools/apply_v140_profile_queue.ps1
 
+      - name: Tighten v1.4.0 queue safety gate
+        shell: pwsh
+        run: ./tools/apply_v140_queue_safety_fix.ps1
+
       - name: Restore Avalonia
         run: dotnet restore src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj
 
@@ -86,7 +90,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: utracer-pro-manager-v1-4-0-cp78-profile-queue
+          name: utracer-pro-manager-v1-4-0-cp79-profile-queue
           path: |
             artifacts/uTracer_PRO_Manager_v1_4_0_WIN_X64.zip
             artifacts/uTracer_PRO_Manager_v1_4_0_SOURCE.zip

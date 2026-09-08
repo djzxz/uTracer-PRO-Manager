@@ -49,6 +49,9 @@ public static class ProfileReadyValidator
                 errors.Add($"Punkt nominalny ekranu ma {ps:F2} W i przekracza 95% Ps max.");
         }
 
+        RequiredText(draft.SourceTitle, "tytuł źródła", errors);
+        RequiredText(draft.SourceUrl, "URL źródła", errors);
+        RequiredText(draft.SourcePage, "strona źródła", errors);
         if (!draft.SourceIdentityConfirmed) errors.Add("Nie potwierdzono zgodności źródła z typem lampy.");
         if (!draft.PinoutConfirmed) errors.Add("Nie potwierdzono pinoutu.");
         if (!draft.HeaterConfirmed) errors.Add("Nie potwierdzono żarzenia.");
@@ -88,7 +91,6 @@ public static class ProfileReadyValidator
         if (!draft.NominalGmMaV.HasValue) warnings.Add("gm pozostaje nieznane — nie będzie używane jako referencja kondycji.");
         if (!draft.NominalMu.HasValue) warnings.Add("μ pozostaje nieznane.");
         if (!draft.NominalRpKohm.HasValue) warnings.Add("Rp pozostaje nieznane.");
-        if (string.IsNullOrWhiteSpace(draft.SourcePage)) warnings.Add("Nie podano strony źródła.");
 
         return new ProfileEditValidationResult(errors.Count == 0, errors, warnings, hwStatus, hwReason);
     }

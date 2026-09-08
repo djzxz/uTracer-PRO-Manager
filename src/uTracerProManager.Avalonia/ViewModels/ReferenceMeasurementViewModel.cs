@@ -1,5 +1,6 @@
 using System.Globalization;
 using uTracerProManager.Core.Models;
+using uTracerProManager.Core.Protocol;
 
 namespace uTracerProManager.AvaloniaApp.ViewModels;
 
@@ -18,6 +19,10 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     private double _schadePercent = 1;
     private int _averagingIndex = 2;
     private int _complianceMa = 25;
+    private int _anodeComplianceMa = 25;
+    private int _screenComplianceMa = 25;
+    private int _anodeRangeIndex;
+    private int _screenRangeIndex;
     private int _delaySeconds;
     private int _warmupSeconds = 60;
     private bool _logarithmicX;
@@ -36,14 +41,18 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     private bool _showGrid = true;
     private bool _useColor = true;
     private bool _keepPlot;
+    private bool _showCatalogReference = true;
+    private bool _livePlotPaused;
     private string _plotTitle = "Charakterystyki lampy";
     private string _status = "Wybierz profil i ustaw rodzaj skanu.";
+    private string _comparisonSummary = "Porównanie z katalogiem: jeszcze nie wykonano.";
     private double _progress;
 
     public IReadOnlyList<ReferenceMeasurementDefinition> MeasurementTypes => ReferenceMeasurementDefinition.All;
-    public IReadOnlyList<int> AveragingOptions { get; } = Enumerable.Range(0, 8).ToArray();
-    public IReadOnlyList<int> ComplianceOptions { get; } = [7, 12, 25, 50, 100, 125, 150, 175, 200];
-    public IReadOnlyList<string> YVariables { get; } = ["Ia [mA]", "Is [mA]", "Brak"];
+    public IReadOnlyList<int> AveragingOptions { get; } = Enumerable.Range(0, 7).ToArray();
+    public IReadOnlyList<int> ComplianceOptions { get; } = CurrentLimitCodes.SupportedMilliAmps;
+    public IReadOnlyList<int> RangeOptions { get; } = Enumerable.Range(0, 9).ToArray();
+    public IReadOnlyList<string> YVariables { get; } = ["Ia [mA]", "Is [mA]", "gm [mA/V]", "Rp [kΩ]", "μ", "Brak"];
     public IReadOnlyList<string> LineStyles { get; } = ["Linie i punkty", "Linie", "Punkty"];
     public IReadOnlyList<string> ScaleModes { get; } = ["Automatyczna", "Ręczna"];
 
@@ -74,7 +83,7 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     public bool UltraLinearVisible => SelectedMeasurement.UltraLinearMode;
     public bool SchadeVisible => SelectedMeasurement.SchadeFeedbackMode;
     public string SpecialWiringText => SelectedMeasurement.PositiveGridMode
-        ? "Podłącz siatkę sterującą lampy do wyjścia SCREEN (Vs), pozostaw zacisk GRID uTracera wolny i potwierdź połączenie."
+        ? "Tryb +Vg: podłącz siatkę sterującą lampy do wyjścia SCREEN (Vs), pozostaw zacisk GRID uTracera wolny. Is jest wtedy prądem siatki."
         : "Sprawdź połączenie Va=Vs / drugiej anody zgodnie z pinoutem wybranego profilu i potwierdź je przed pomiarem.";
 
     public double XStart { get => _xStart; set => SetProperty(ref _xStart, value); }
@@ -89,6 +98,10 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     public double SchadeFeedbackPercent { get => _schadePercent; set => SetProperty(ref _schadePercent, value); }
     public int AveragingIndex { get => _averagingIndex; set => SetProperty(ref _averagingIndex, value); }
     public int ComplianceMa { get => _complianceMa; set => SetProperty(ref _complianceMa, value); }
+    public int AnodeComplianceMa { get => _anodeComplianceMa; set => SetProperty(ref _anodeComplianceMa, value); }
+    public int ScreenComplianceMa { get => _screenComplianceMa; set => SetProperty(ref _screenComplianceMa, value); }
+    public int AnodeRangeIndex { get => _anodeRangeIndex; set => SetProperty(ref _anodeRangeIndex, value); }
+    public int ScreenRangeIndex { get => _screenRangeIndex; set => SetProperty(ref _screenRangeIndex, value); }
     public int DelaySeconds { get => _delaySeconds; set => SetProperty(ref _delaySeconds, value); }
     public int WarmupSeconds { get => _warmupSeconds; set => SetProperty(ref _warmupSeconds, value); }
     public bool LogarithmicX { get => _logarithmicX; set => SetProperty(ref _logarithmicX, value); }
@@ -108,8 +121,11 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
     public bool ShowGrid { get => _showGrid; set => SetProperty(ref _showGrid, value); }
     public bool UseColor { get => _useColor; set => SetProperty(ref _useColor, value); }
     public bool KeepPlot { get => _keepPlot; set => SetProperty(ref _keepPlot, value); }
+    public bool ShowCatalogReference { get => _showCatalogReference; set => SetProperty(ref _showCatalogReference, value); }
+    public bool LivePlotPaused { get => _livePlotPaused; set => SetProperty(ref _livePlotPaused, value); }
     public string PlotTitle { get => _plotTitle; set => SetProperty(ref _plotTitle, value); }
     public string Status { get => _status; set => SetProperty(ref _status, value); }
+    public string ComparisonSummary { get => _comparisonSummary; set => SetProperty(ref _comparisonSummary, value); }
     public double Progress { get => _progress; set => SetProperty(ref _progress, value); }
 
     public void ApplyProfile(TubeProfile profile)
@@ -120,7 +136,19 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
         ConstantVg = profile.GridVoltage;
         ConstantVh = profile.HeaterVoltage;
         WarmupSeconds = Math.Clamp(profile.WarmupSeconds, 60, 1800);
-        ComplianceMa = ResolveCompliance(profile);
+
+        AnodeComplianceMa = SafeFloorOrMinimum(profile.AnodeComplianceMa);
+        var requestedScreen = profile.ScreenComplianceMa > 0 ? profile.ScreenComplianceMa : profile.AnodeComplianceMa;
+        ScreenComplianceMa = SafeFloorOrMinimum(requestedScreen);
+        ComplianceMa = profile.ScreenVoltage > 0 || profile.IsDualTriode
+            ? Math.Min(AnodeComplianceMa, ScreenComplianceMa)
+            : AnodeComplianceMa;
+
+        AnodeRangeIndex = 0;
+        ScreenRangeIndex = 0;
+        ExternalHeater = profile.RequiresExternalHeater;
+        ComparisonSummary = "Porównanie z katalogiem: oczekuje na nowy pomiar.";
+
         XStart = profile.CurveVaStartV > 0 ? profile.CurveVaStartV : Math.Max(2, profile.AnodeVoltage * 0.1);
         XStop = profile.CurveVaStopV > XStart ? profile.CurveVaStopV : Math.Max(XStart + 10, profile.AnodeVoltage);
         Intervals = profile.CurveVaStepV > 0
@@ -135,7 +163,9 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
         XMaximum = XStop;
         YMinimum = 0;
         YMaximum = Math.Max(10, profile.AnodeComplianceMa);
-        Status = "Wczytano zatwierdzone limity profilu. Sprawdź rodzaj skanu i okablowanie.";
+        Status = ExternalHeater
+            ? "Profil wymaga zewnętrznego żarzenia. Checkbox oznacza potwierdzenie osobnego zasilacza; sprawdź jego napięcie przed START."
+            : "Wczytano zatwierdzone limity profilu. Compliance Ia/Is został zaokrąglony w dół; sprawdź rodzaj skanu i okablowanie.";
     }
 
     public void ApplyOriginalSetup(OriginalUTracerSetupDocument document)
@@ -149,7 +179,7 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
         ConstantVs = document.Constant1;
         ConstantVh = document.Constant2;
         SteppingValues = document.FirstSteppingValue.ToString("0.###", CultureInfo.InvariantCulture);
-        Status = $"Zaimportowano panel pomiarowy z {document.Variant}.";
+        Status = $"Zaimportowano panel pomiarowy z {document.Variant}. Pola niezamapowane pozostają zachowane 1:1 w dokumencie źródłowym.";
     }
 
     public ReferenceMeasurementRequest BuildRequest()
@@ -173,7 +203,15 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
             WarmupSeconds,
             LogarithmicX,
             SpecialWiringConfirmed,
-            ExternalHeater);
+            ExternalHeater)
+        {
+            AnodeComplianceMa = AnodeComplianceMa,
+            ScreenComplianceMa = ScreenComplianceMa,
+            ExternalHeaterSupplyConfirmed = ExternalHeater,
+            AnodeRangeIndex = AnodeRangeIndex,
+            ScreenRangeIndex = ScreenRangeIndex,
+            Section = "A"
+        };
     }
 
     private static IReadOnlyList<double> ParseValues(string text)
@@ -188,10 +226,12 @@ public sealed class ReferenceMeasurementViewModel : ObservableObject
         return result.Distinct().Take(40).ToArray();
     }
 
-    private static int ResolveCompliance(TubeProfile profile)
+    private static int SafeFloorOrMinimum(double requested)
     {
-        var requested = Math.Max(profile.AnodeComplianceMa, profile.ScreenComplianceMa);
-        return new[] { 7, 12, 25, 50, 100, 125, 150, 175, 200 }
-            .First(value => value >= Math.Min(200, requested));
+        if (!double.IsFinite(requested) || requested <= 0)
+            return 7;
+        return requested < CurrentLimitCodes.SupportedMilliAmps[0]
+            ? CurrentLimitCodes.SupportedMilliAmps[0]
+            : CurrentLimitCodes.FloorMilliAmps(requested);
     }
 }

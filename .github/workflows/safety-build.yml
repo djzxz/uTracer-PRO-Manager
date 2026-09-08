@@ -44,6 +44,10 @@ jobs:
         shell: pwsh
         run: ./tools/apply_v131_blocked_profile_policy.ps1
 
+      - name: Apply v1.4.0 profile queue
+        shell: pwsh
+        run: ./tools/apply_v140_profile_queue.ps1
+
       - name: Restore Avalonia
         run: dotnet restore src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj
 
@@ -66,7 +70,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path artifacts -Force | Out-Null
-          Compress-Archive -Path artifacts/program/* -DestinationPath artifacts/uTracer_PRO_Manager_v1_3_1_WIN_X64.zip -CompressionLevel Optimal -Force
+          Compress-Archive -Path artifacts/program/* -DestinationPath artifacts/uTracer_PRO_Manager_v1_4_0_WIN_X64.zip -CompressionLevel Optimal -Force
 
           Get-ChildItem -Path src,tests -Directory -Recurse -Force |
             Where-Object { $_.Name -in @('bin','obj') } |
@@ -77,14 +81,14 @@ jobs:
             'README.md', 'README_PL.md', 'URUCHOMIENIE.txt',
             'Directory.Build.props', 'NuGet.Config', '.gitattributes', '.gitignore'
           ) | Where-Object { Test-Path $_ }
-          Compress-Archive -Path $sourcePaths -DestinationPath artifacts/uTracer_PRO_Manager_v1_3_1_SOURCE.zip -CompressionLevel Optimal -Force
+          Compress-Archive -Path $sourcePaths -DestinationPath artifacts/uTracer_PRO_Manager_v1_4_0_SOURCE.zip -CompressionLevel Optimal -Force
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: utracer-pro-manager-v1-3-1-cp78-final
+          name: utracer-pro-manager-v1-4-0-cp78-profile-queue
           path: |
-            artifacts/uTracer_PRO_Manager_v1_3_1_WIN_X64.zip
-            artifacts/uTracer_PRO_Manager_v1_3_1_SOURCE.zip
+            artifacts/uTracer_PRO_Manager_v1_4_0_WIN_X64.zip
+            artifacts/uTracer_PRO_Manager_v1_4_0_SOURCE.zip
           if-no-files-found: error
           retention-days: 30

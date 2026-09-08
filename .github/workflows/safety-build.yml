@@ -52,6 +52,10 @@ jobs:
         shell: pwsh
         run: ./tools/apply_v140_queue_safety_fix.ps1
 
+      - name: Fix v1.4.0 queue numeric types
+        shell: pwsh
+        run: ./tools/apply_v140_type_fix.ps1
+
       - name: Restore Avalonia
         run: dotnet restore src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj
 

@@ -36,6 +36,10 @@ jobs:
         shell: pwsh
         run: ./tools/apply_v131_final_patch.ps1
 
+      - name: Normalize v1.3.1 editor XAML
+        shell: pwsh
+        run: ./tools/apply_v131_xaml_fix.ps1
+
       - name: Apply v1.3.1 blocked profile policy
         shell: pwsh
         run: ./tools/apply_v131_blocked_profile_policy.ps1

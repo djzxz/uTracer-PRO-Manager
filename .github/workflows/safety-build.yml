@@ -56,6 +56,10 @@ jobs:
         shell: pwsh
         run: ./tools/apply_v140_type_fix.ps1
 
+      - name: Align v1.4.0 version with CP79
+        shell: pwsh
+        run: ./tools/apply_v140_cp79_version_fix.ps1
+
       - name: Restore Avalonia
         run: dotnet restore src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj
 

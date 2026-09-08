@@ -1,0 +1,106 @@
+name: uTracer safety build
+
+on:
+  push:
+    branches:
+      - fix/cp78-safety-gui-alignment
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-selftest:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Apply CP78 UI hooks
+        shell: pwsh
+        run: ./tools/apply_cp78_ui_patch.ps1
+
+      - name: Apply v1.3.1 final patch
+        shell: pwsh
+        run: ./tools/apply_v131_final_patch.ps1
+
+      - name: Normalize v1.3.1 editor XAML
+        shell: pwsh
+        run: ./tools/apply_v131_xaml_fix.ps1
+
+      - name: Apply v1.3.1 blocked profile policy
+        shell: pwsh
+        run: ./tools/apply_v131_blocked_profile_policy.ps1
+
+      - name: Apply v1.4.0 profile queue
+        shell: pwsh
+        run: ./tools/apply_v140_profile_queue.ps1
+
+      - name: Tighten v1.4.0 queue safety gate
+        shell: pwsh
+        run: ./tools/apply_v140_queue_safety_fix.ps1
+
+      - name: Fix v1.4.0 queue numeric types
+        shell: pwsh
+        run: ./tools/apply_v140_type_fix.ps1
+
+      - name: Align v1.4.0 version with CP79
+        shell: pwsh
+        run: ./tools/apply_v140_cp79_version_fix.ps1
+
+      - name: Restore Avalonia
+        run: dotnet restore src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj
+
+      - name: Restore self-tests
+        run: dotnet restore tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj
+
+      - name: Build Avalonia Release
+        run: dotnet build src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj -c Release --no-restore
+
+      - name: Build self-tests Release
+        run: dotnet build tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj -c Release --no-restore
+
+      - name: Run self-tests
+        run: dotnet run --project tests/uTracerProManager.SelfTest/uTracerProManager.SelfTest.csproj -c Release --no-build
+
+      - name: Publish Windows x64 self-contained
+        run: dotnet publish src/uTracerProManager.Avalonia/uTracerProManager.Avalonia.csproj -c Release -r win-x64 --self-contained true -o artifacts/program
+
+      - name: Package program and full source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          Compress-Archive -Path artifacts/program/* -DestinationPath artifacts/uTracer_PRO_Manager_v1_4_0_WIN_X64.zip -CompressionLevel Optimal -Force
+
+          Get-ChildItem -Path src,tests -Directory -Recurse -Force |
+            Where-Object { $_.Name -in @('bin','obj') } |
+            Remove-Item -Recurse -Force
+
+          $sourcePaths = @(
+            'src', 'tests', 'tools', 'docs', 'DOKUMENTACJA', 'CHECKPOINTY',
+            'README.md', 'README_PL.md', 'URUCHOMIENIE.txt',
+            'Directory.Build.props', 'NuGet.Config', '.gitattributes', '.gitignore'
+          ) | Where-Object { Test-Path $_ }
+          Compress-Archive -Path $sourcePaths -DestinationPath artifacts/uTracer_PRO_Manager_v1_4_0_SOURCE.zip -CompressionLevel Optimal -Force
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: utracer-pro-manager-v1-4-0-cp79-profile-queue
+          path: |
+            artifacts/uTracer_PRO_Manager_v1_4_0_WIN_X64.zip
+            artifacts/uTracer_PRO_Manager_v1_4_0_SOURCE.zip
+          if-no-files-found: error
+          retention-days: 30
